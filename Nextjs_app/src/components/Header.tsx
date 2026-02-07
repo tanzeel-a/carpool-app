@@ -2,7 +2,6 @@
 // Client component directive - required for useState and event handlers in Next.js App Router
 
 import { useState } from "react";
-import Image from "next/image";
 import styles from "./Header.module.css";
 
 /**
@@ -25,17 +24,7 @@ export default function Header() {
     <>
       <header className={styles.header}>
         {/* Brand/Logo */}
-        <span className={styles.brand}>
-          <Image
-            src="/assets/favicon_feat.gif"
-            alt="Carpool logo"
-            width={28}
-            height={28}
-            className={styles.brandIcon}
-            unoptimized
-          />
-          Carpool
-        </span>
+        <span className={styles.brand}>Carpool</span>
 
         {/* Desktop Navigation - Hidden on mobile via CSS */}
         <nav className={styles.nav}>
