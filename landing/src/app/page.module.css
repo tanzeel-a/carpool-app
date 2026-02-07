@@ -1,4 +1,32 @@
+/**
+ * ================================================
+ * CARPOOL LANDING PAGE STYLES
+ * ================================================
+ *
+ * Table of Contents:
+ * 1. CSS Variables (Design Tokens)
+ * 2. Page Layout & Grid Pattern
+ * 3. Header & Navigation (legacy - now in Header.module.css)
+ * 4. Hero Section
+ * 5. Buttons & Actions
+ * 6. Statistics Meta Section
+ * 7. Scrolling Ticker
+ * 8. Story Section
+ * 9. Footer
+ * 10. Responsive Media Queries
+ *
+ * Color Palette:
+ * - Gold (#d4af37) - Primary accent, headings, CTAs
+ * - Ivory (#f6f1ea) - Light backgrounds
+ * - Ink (#11100e) - Dark text, dark sections
+ * - Muted (#6e6660) - Secondary text
+ */
+
+/* ================================================
+   1. CSS VARIABLES (Design Tokens)
+   ================================================ */
 .page {
+  /* Light colors */
   --ivory: #f6f1ea;
   --ink: #11100e;
   --muted: #6e6660;
@@ -6,8 +34,11 @@
   --accent-soft: #e6ece8;
   --line: rgba(17, 16, 14, 0.12);
   --card: rgba(255, 255, 255, 0.7);
+
+  /* Gold accent colors */
   --gold: #d4af37;
   --gold-light: #f4d984;
+  /* Animated gradient for shiny gold text effect */
   --gold-shine: linear-gradient(135deg, #f4d984 0%, #d4af37 25%, #aa8a2e 50%, #d4af37 75%, #f4d984 100%);
 
   min-height: 100vh;
@@ -19,6 +50,7 @@
   position: relative;
 }
 
+/* Grid pattern overlay for subtle texture */
 .page::before {
   content: "";
   position: absolute;
@@ -32,6 +64,11 @@
   opacity: 0.6;
   pointer-events: none;
 }
+
+/* ================================================
+   3. HEADER & NAVIGATION (Legacy styles)
+   Note: Main header styles are now in Header.module.css
+   ================================================ */
 
 .header {
   position: relative;
@@ -99,6 +136,12 @@
   color: #f7f4ef;
 }
 
+/* ================================================
+   4. HERO SECTION
+   - Full viewport height hero with background image
+   - Gradient overlay for text readability
+   - Content positioned at bottom
+   ================================================ */
 .main {
   position: relative;
   z-index: 1;
@@ -108,6 +151,7 @@
   padding: 12px 3vw 40px;
 }
 
+/* Hero container with rounded corners and shadow */
 .hero {
   position: relative;
   min-height: 75vh;
@@ -412,7 +456,7 @@
 
 .footerGrid {
   display: grid;
-  grid-template-columns: repeat(4, 1fr);
+  grid-template-columns: repeat(3, 1fr);
   gap: 32px;
 }
 
