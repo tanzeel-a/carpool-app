@@ -44,6 +44,13 @@ export default function Home() {
           <p className={styles.sceneCaption}>Share the ride. Split the fare. Save the planet.</p>
         </section>
 
+        <div className={styles.ticker}>
+          <div className={styles.tickerTrack}>
+            <span>Mobile app releasing shortly</span>
+            <span>Mobile app releasing shortly</span>
+          </div>
+        </div>
+
         <section id="story" className={styles.story}>
           <div>
             <h2>Stop traveling alone. Start saving together.</h2>
@@ -58,36 +65,49 @@ export default function Home() {
       </main>
 
       <footer className={styles.footer}>
-        <div className={styles.footerAnnouncement}>
-          <span className={styles.announcementBadge}>Coming Soon</span>
-          <p>Mobile app releasing shortly. Get notified when we launch.</p>
-        </div>
-
-        <div className={styles.footerGrid}>
-          <div className={styles.footerSection}>
-            <h4>Creators</h4>
-            <p>Built with care by <strong>Harish</strong> & <strong>Tanzeel</strong></p>
+        <div className={styles.footerMain}>
+          <div className={styles.footerBrand}>
+            <h3>Carpool</h3>
+            <p>Share the ride. Split the fare. Save the planet.</p>
           </div>
 
-          <div className={styles.footerSection}>
-            <h4>Contact</h4>
-            <p>
-              <a href="tel:+919161148033">+91 9161148033</a>
-            </p>
-            <p>
-              <a href="mailto:tanzeel.ahmad@tifr.res.in">tanzeel.ahmad@tifr.res.in</a>
-            </p>
-          </div>
+          <div className={styles.footerGrid}>
+            <div className={styles.footerColumn}>
+              <h4>Contact Us</h4>
+              <p><a href="tel:+919161148033">+91 9161148033</a></p>
+              <p><a href="tel:+916386148537">+91 6386148537</a></p>
+            </div>
 
-          <div className={styles.footerSection}>
-            <h4>Mission</h4>
-            <p>Making every journey shared, affordable, and sustainable.</p>
+            <div className={styles.footerColumn}>
+              <h4>Write to Us</h4>
+              <p><a href="mailto:tanzeel.ahmad@tifr.res.in">tanzeel.ahmad@tifr.res.in</a></p>
+              <p>We'd love to hear from you</p>
+            </div>
+
+            <div className={styles.footerColumn}>
+              <h4>Creators</h4>
+              <p>Built with care by</p>
+              <p><strong>Harish</strong> & <strong>Tanzeel</strong></p>
+            </div>
+
+            <div className={styles.footerColumn}>
+              <h4>Coming Soon</h4>
+              <p>Mobile App for iOS & Android</p>
+              <p>Stay tuned for updates</p>
+            </div>
           </div>
         </div>
 
         <div className={styles.footerBottom}>
-          <span>© 2026 Carpool</span>
-          <span>Share the ride. Split the fare. Save the planet.</span>
+          <span>© 2026 Carpool. All rights reserved.</span>
+          <div className={styles.footerLinks}>
+            <a href="#">Privacy</a>
+            <a href="#">Terms</a>
+          </div>
+        </div>
+
+        <div className={styles.footerImage}>
+          <img src="/assets/footer_city.png" alt="City skyline" />
         </div>
       </footer>
     </div>

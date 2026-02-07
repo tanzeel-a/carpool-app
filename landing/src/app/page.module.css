@@ -104,8 +104,8 @@
   z-index: 1;
   display: flex;
   flex-direction: column;
-  gap: 120px;
-  padding: 12px 3vw 96px;
+  gap: 24px;
+  padding: 12px 3vw 40px;
 }
 
 .hero {
@@ -339,77 +339,106 @@
   color: #11100e;
 }
 
+.ticker {
+  overflow: hidden;
+  background: var(--gold);
+  padding: 16px 0;
+  border-radius: 8px;
+}
+
+.tickerTrack {
+  display: flex;
+  align-items: center;
+  gap: 100vw;
+  animation: scroll 15s linear infinite;
+  white-space: nowrap;
+  width: max-content;
+  padding-left: 100vw;
+}
+
+.tickerTrack span {
+  font-size: clamp(18px, 3vw, 28px);
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.2em;
+  color: #0a0a0a;
+  flex-shrink: 0;
+}
+
+@keyframes scroll {
+  0% {
+    transform: translateX(0);
+  }
+  100% {
+    transform: translateX(-50%);
+  }
+}
+
 .footer {
-  padding: 60px 7vw 40px;
   position: relative;
   z-index: 1;
   display: flex;
   flex-direction: column;
-  gap: 40px;
+  margin-top: 40px;
+  overflow: hidden;
 }
 
-.footerAnnouncement {
+.footerMain {
+  padding: 60px 5vw 40px;
   display: flex;
-  align-items: center;
-  gap: 16px;
-  padding: 20px 24px;
-  border: 1px solid var(--gold);
-  border-radius: 12px;
-  background: rgba(212, 175, 55, 0.05);
+  flex-direction: column;
+  gap: 48px;
 }
 
-.announcementBadge {
-  padding: 6px 12px;
-  background: var(--gold);
-  color: #0a0a0a;
-  font-size: 11px;
-  font-weight: 600;
+.footerBrand h3 {
+  font-size: 28px;
+  letter-spacing: 0.15em;
   text-transform: uppercase;
-  letter-spacing: 0.1em;
-  border-radius: 4px;
-  white-space: nowrap;
+  font-weight: 700;
+  color: var(--ink);
+  margin-bottom: 8px;
 }
 
-.footerAnnouncement p {
-  font-size: 15px;
-  color: var(--ink);
-  margin: 0;
+.footerBrand p {
+  font-size: 14px;
+  color: var(--muted);
+  letter-spacing: 0.05em;
 }
 
 .footerGrid {
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 40px;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 32px;
 }
 
-.footerSection h4 {
+.footerColumn h4 {
   font-size: 11px;
   text-transform: uppercase;
-  letter-spacing: 0.2em;
+  letter-spacing: 0.18em;
   color: var(--gold);
-  margin-bottom: 12px;
   font-weight: 600;
+  margin-bottom: 16px;
 }
 
-.footerSection p {
+.footerColumn p {
   font-size: 14px;
-  line-height: 1.7;
+  line-height: 1.8;
   color: var(--muted);
-  margin: 0 0 8px 0;
+  margin: 0;
 }
 
-.footerSection p strong {
+.footerColumn p strong {
   color: var(--ink);
   font-weight: 600;
 }
 
-.footerSection a {
+.footerColumn a {
   color: var(--ink);
   text-decoration: none;
   transition: color 0.2s ease;
 }
 
-.footerSection a:hover {
+.footerColumn a:hover {
   color: var(--gold);
 }
 
@@ -417,12 +446,42 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding-top: 24px;
+  padding: 20px 5vw;
   border-top: 1px solid var(--line);
   font-size: 12px;
-  text-transform: uppercase;
-  letter-spacing: 0.15em;
   color: var(--muted);
+}
+
+.footerLinks {
+  display: flex;
+  gap: 24px;
+}
+
+.footerLinks a {
+  color: var(--muted);
+  text-decoration: none;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  font-size: 11px;
+  transition: color 0.2s ease;
+}
+
+.footerLinks a:hover {
+  color: var(--gold);
+}
+
+.footerImage {
+  width: 100%;
+  margin-top: -20px;
+  pointer-events: none;
+}
+
+.footerImage img {
+  width: 100%;
+  height: auto;
+  display: block;
+  object-fit: cover;
+  object-position: top;
 }
 
 @media (max-width: 900px) {
@@ -444,14 +503,7 @@
   }
 
   .footerGrid {
-    grid-template-columns: 1fr;
-    gap: 32px;
-  }
-
-  .footerAnnouncement {
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 12px;
+    grid-template-columns: repeat(2, 1fr);
   }
 
   .footerBottom {
@@ -467,7 +519,7 @@
   }
 
   .main {
-    gap: 80px;
+    gap: 24px;
   }
 
   .actions {
@@ -486,5 +538,15 @@
   .sceneCaption {
     align-self: flex-start;
     letter-spacing: 0.12em;
+  }
+
+  .footerGrid {
+    grid-template-columns: 1fr;
+    gap: 24px;
+  }
+
+  .footerMain {
+    padding: 40px 5vw 30px;
+    gap: 32px;
   }
 }
