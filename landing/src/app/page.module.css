@@ -24,12 +24,12 @@
   position: absolute;
   inset: 0;
   background-image: linear-gradient(
-      rgba(17, 16, 14, 0.05) 1px,
+      rgba(17, 16, 14, 0.1) 1px,
       transparent 1px
     ),
-    linear-gradient(90deg, rgba(17, 16, 14, 0.05) 1px, transparent 1px);
+    linear-gradient(90deg, rgba(17, 16, 14, 0.1) 1px, transparent 1px);
   background-size: 36px 36px;
-  opacity: 0.4;
+  opacity: 0.6;
   pointer-events: none;
 }
 
@@ -340,13 +340,89 @@
 }
 
 .footer {
-  padding: 32px 7vw 40px;
-  font-size: 12px;
-  text-transform: uppercase;
-  letter-spacing: 0.24em;
-  color: var(--muted);
+  padding: 60px 7vw 40px;
   position: relative;
   z-index: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 40px;
+}
+
+.footerAnnouncement {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 20px 24px;
+  border: 1px solid var(--gold);
+  border-radius: 12px;
+  background: rgba(212, 175, 55, 0.05);
+}
+
+.announcementBadge {
+  padding: 6px 12px;
+  background: var(--gold);
+  color: #0a0a0a;
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  border-radius: 4px;
+  white-space: nowrap;
+}
+
+.footerAnnouncement p {
+  font-size: 15px;
+  color: var(--ink);
+  margin: 0;
+}
+
+.footerGrid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 40px;
+}
+
+.footerSection h4 {
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.2em;
+  color: var(--gold);
+  margin-bottom: 12px;
+  font-weight: 600;
+}
+
+.footerSection p {
+  font-size: 14px;
+  line-height: 1.7;
+  color: var(--muted);
+  margin: 0 0 8px 0;
+}
+
+.footerSection p strong {
+  color: var(--ink);
+  font-weight: 600;
+}
+
+.footerSection a {
+  color: var(--ink);
+  text-decoration: none;
+  transition: color 0.2s ease;
+}
+
+.footerSection a:hover {
+  color: var(--gold);
+}
+
+.footerBottom {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding-top: 24px;
+  border-top: 1px solid var(--line);
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.15em;
+  color: var(--muted);
 }
 
 @media (max-width: 900px) {
@@ -365,6 +441,23 @@
 
   .nav {
     display: none;
+  }
+
+  .footerGrid {
+    grid-template-columns: 1fr;
+    gap: 32px;
+  }
+
+  .footerAnnouncement {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 12px;
+  }
+
+  .footerBottom {
+    flex-direction: column;
+    gap: 12px;
+    text-align: center;
   }
 }
 

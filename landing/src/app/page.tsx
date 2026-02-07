@@ -57,7 +57,39 @@ export default function Home() {
         </section>
       </main>
 
-      <footer className={styles.footer}>© 2026 Carpool</footer>
+      <footer className={styles.footer}>
+        <div className={styles.footerAnnouncement}>
+          <span className={styles.announcementBadge}>Coming Soon</span>
+          <p>Mobile app releasing shortly. Get notified when we launch.</p>
+        </div>
+
+        <div className={styles.footerGrid}>
+          <div className={styles.footerSection}>
+            <h4>Creators</h4>
+            <p>Built with care by <strong>Harish</strong> & <strong>Tanzeel</strong></p>
+          </div>
+
+          <div className={styles.footerSection}>
+            <h4>Contact</h4>
+            <p>
+              <a href="tel:+919161148033">+91 9161148033</a>
+            </p>
+            <p>
+              <a href="mailto:tanzeel.ahmad@tifr.res.in">tanzeel.ahmad@tifr.res.in</a>
+            </p>
+          </div>
+
+          <div className={styles.footerSection}>
+            <h4>Mission</h4>
+            <p>Making every journey shared, affordable, and sustainable.</p>
+          </div>
+        </div>
+
+        <div className={styles.footerBottom}>
+          <span>© 2026 Carpool</span>
+          <span>Share the ride. Split the fare. Save the planet.</span>
+        </div>
+      </footer>
     </div>
   );
 }
