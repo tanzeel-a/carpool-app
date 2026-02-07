@@ -337,6 +337,11 @@
 .primaryAlt {
   background: #f6f1ea;
   color: #11100e;
+  padding: 14px 24px;
+  font-size: 12px;
+  letter-spacing: 0.08em;
+  white-space: nowrap;
+  flex-shrink: 0;
 }
 
 .ticker {

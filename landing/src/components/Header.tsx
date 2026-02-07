@@ -15,7 +15,7 @@ export default function Header() {
       <span className={styles.brand}>Carpool</span>
 
       <nav className={styles.nav}>
-        <a href="#story">Book a ride</a>
+        <a href="#story">BOOK A RIDE</a>
         <a href="#login">Login</a>
       </nav>
 
@@ -32,7 +32,7 @@ export default function Header() {
       </button>
 
       <div className={`${styles.mobileNav} ${isMenuOpen ? styles.mobileNavOpen : ""}`}>
-        <a href="#story" onClick={() => setIsMenuOpen(false)}>Book a ride</a>
+        <a href="#story" onClick={() => setIsMenuOpen(false)}>BOOK A RIDE</a>
         <a href="#login" onClick={() => setIsMenuOpen(false)}>Login</a>
       </div>
 
