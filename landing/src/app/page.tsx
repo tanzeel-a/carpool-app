@@ -1,15 +1,10 @@
 import styles from "./page.module.css";
+import Header from "../components/Header";
 
 export default function Home() {
   return (
     <div className={styles.page}>
-      <header className={styles.header}>
-        <span className={styles.brand}>Carpool</span>
-        <nav className={styles.nav}>
-          <a href="#story">book a ride</a>
-          <a href="#login">login</a>
-        </nav>
-      </header>
+      <Header />
 
       <main className={styles.main}>
         <section className={styles.hero}>
