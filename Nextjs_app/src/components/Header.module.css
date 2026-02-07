@@ -14,7 +14,12 @@
   font-weight: 600;
   display: flex;
   align-items: center;
+  gap: 10px;
   line-height: 1;
+}
+
+.brandIcon {
+  display: block;
 }
 
 .nav {

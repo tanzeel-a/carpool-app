@@ -16,6 +16,9 @@ const ibmPlexMono = IBM_Plex_Mono({
 export const metadata: Metadata = {
   title: "Carpool | Quiet Commutes",
   description: "A minimalist carpool platform for calm, shared rides.",
+  icons: {
+    icon: "/assets/favicon_feat.gif",
+  },
 };
 
 export default function RootLayout({
