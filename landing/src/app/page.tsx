@@ -6,8 +6,8 @@ export default function Home() {
       <header className={styles.header}>
         <span className={styles.brand}>Carpool</span>
         <nav className={styles.nav}>
-          <a href="#story">Story</a>
-          <button className={styles.cta}>Get early access</button>
+          <a href="#story">book a ride</a>
+          <a href="#login">login</a>
         </nav>
       </header>
 
@@ -81,7 +81,6 @@ export default function Home() {
             <div className={styles.footerColumn}>
               <h4>Write to Us</h4>
               <p><a href="mailto:tanzeel.ahmad@tifr.res.in">tanzeel.ahmad@tifr.res.in</a></p>
-              <p>We'd love to hear from you</p>
             </div>
 
             <div className={styles.footerColumn}>
@@ -91,9 +90,7 @@ export default function Home() {
             </div>
 
             <div className={styles.footerColumn}>
-              <h4>Coming Soon</h4>
-              <p>Mobile App for iOS & Android</p>
-              <p>Stay tuned for updates</p>
+              <h4>Give your feedback</h4>
             </div>
           </div>
         </div>
