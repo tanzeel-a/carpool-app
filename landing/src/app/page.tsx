@@ -1,5 +1,4 @@
 import styles from "./page.module.css";
-import CarScene from "../components/CarScene";
 
 export default function Home() {
   return (
@@ -7,7 +6,6 @@ export default function Home() {
       <header className={styles.header}>
         <span className={styles.brand}>Carpool</span>
         <nav className={styles.nav}>
-          <a href="#benefits">Benefits</a>
           <a href="#story">Story</a>
           <button className={styles.cta}>Get early access</button>
         </nav>
@@ -15,75 +13,47 @@ export default function Home() {
 
       <main className={styles.main}>
         <section className={styles.hero}>
+          <div className={styles.heroBackground} />
+          <div className={styles.heroTint} />
+
           <div className={styles.copy}>
-            <p className={styles.eyebrow}>Low-traffic mornings</p>
-            <h1>Share rides with neighbors. Keep streets quieter.</h1>
+            <p className={styles.eyebrow}>Your next ride is closer than you think</p>
+            <h1>Share rides with people heading your way</h1>
             <p className={styles.subcopy}>
-              A minimalist carpool experience that makes everyday commutes feel
-              lighter. Schedule, match, and ride with a small trusted circle.
+              Discover travelers nearby going to the same destination. Match instantly, split the fare, and reduce your carbon footprint together.
             </p>
             <div className={styles.actions}>
-              <button className={styles.primary}>Request access</button>
-              <button className={styles.secondary}>See the flow</button>
+              <button className={styles.primary}>Find people nearby</button>
+              <button className={styles.secondary}>How it works</button>
             </div>
             <div className={styles.meta}>
               <div>
-                <span className={styles.metaValue}>12 min</span>
-                <span className={styles.metaLabel}>avg. saved</span>
+                <span className={styles.metaValue}>50%</span>
+                <span className={styles.metaLabel}>less fare</span>
               </div>
               <div>
-                <span className={styles.metaValue}>3x</span>
-                <span className={styles.metaLabel}>less parking</span>
+                <span className={styles.metaValue}>2x</span>
+                <span className={styles.metaLabel}>less emissions</span>
               </div>
               <div>
-                <span className={styles.metaValue}>8</span>
-                <span className={styles.metaLabel}>rides / week</span>
+                <span className={styles.metaValue}>100m</span>
+                <span className={styles.metaLabel}>match radius</span>
               </div>
             </div>
           </div>
-
-          <div className={styles.sceneWrap}>
-            <div className={styles.sceneFrame}>
-              <CarScene className={styles.carScene} />
-            </div>
-            <div className={styles.sceneCaption}>
-              Real low-poly fleet. Real-time three.js render.
-            </div>
-          </div>
-        </section>
-
-        <section id="benefits" className={styles.benefits}>
-          <h2>Designed for real neighborhoods.</h2>
-          <p>
-            Only three steps to coordinate rides, tuned for short distances and
-            trusted circles. Keep your mornings focused and your streets open.
-          </p>
-          <div className={styles.benefitGrid}>
-            <div>
-              <h3>Private pods</h3>
-              <p>Invite-only circles with shared preferences and pickup zones.</p>
-            </div>
-            <div>
-              <h3>Quiet mapping</h3>
-              <p>Low-contrast UI that keeps attention on the road.</p>
-            </div>
-            <div>
-              <h3>Schedule light</h3>
-              <p>Set it once, reuse the same route across the week.</p>
-            </div>
-          </div>
+          <p className={styles.sceneCaption}>Share the ride. Split the fare. Save the planet.</p>
         </section>
 
         <section id="story" className={styles.story}>
           <div>
-            <h2>Small fleet. Big impact.</h2>
+            <h2>Stop traveling alone. Start saving together.</h2>
             <p>
-              We built Carpool for people who want to commute together without
-              the noise. Lightweight tools, friendly reminders, and a soft
-              visual language that respects your time.
+              At any bus stop, train station, or street corner, there are people heading your way.
+              You just don't know it yet. We connect you with nearby travelers in real-time,
+              so you can share a cab, split the cost, and cut emissions — all in seconds.
             </p>
           </div>
-          <button className={styles.primaryAlt}>Join the pilot</button>
+          <button className={styles.primaryAlt}>Get early access</button>
         </section>
       </main>
 
