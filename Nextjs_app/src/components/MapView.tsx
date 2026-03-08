@@ -175,18 +175,25 @@ function LabelMarker({ position, label, color, isUser = false, pulse = false }: 
       position={position}
       mapPaneName={OverlayView.OVERLAY_MOUSE_TARGET}
     >
-      <div className={`${styles.labelMarker} ${isUser ? styles.userMarker : ''} ${pulse ? styles.pulseMarker : ''}`}>
-        <div
-          className={styles.markerDot}
-          style={{ backgroundColor: markerColor }}
-        />
+      <div className={`${styles.labelMarker} ${isUser ? styles.userMarker : ''}`}>
         <div
           className={styles.markerLabel}
           style={{ backgroundColor: markerColor }}
         >
           {label}
         </div>
-        {pulse && <div className={styles.markerPulse} style={{ borderColor: markerColor }} />}
+        <div className={styles.markerDotWrapper}>
+          {pulse && (
+            <>
+              <div className={styles.markerPulse} style={{ borderColor: markerColor }} />
+              <div className={styles.markerPulse} style={{ borderColor: markerColor, animationDelay: '0.5s' }} />
+            </>
+          )}
+          <div
+            className={styles.markerDot}
+            style={{ backgroundColor: markerColor }}
+          />
+        </div>
       </div>
     </OverlayView>
   );
