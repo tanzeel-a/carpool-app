@@ -2,6 +2,8 @@
 // Client component directive - required for useState and event handlers in Next.js App Router
 
 import { useState } from "react";
+import Link from "next/link";
+import { useAuth } from "./AuthProvider";
 import styles from "./Header.module.css";
 
 /**
@@ -10,26 +12,33 @@ import styles from "./Header.module.css";
  * Responsive navigation header with:
  * - Desktop: Horizontal nav links
  * - Mobile: Hamburger menu with slide-in drawer
+ * - Dynamic login/dashboard link based on auth state
  */
 export default function Header() {
   // State to track if mobile menu is open or closed
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const { user, loading } = useAuth();
 
   // Toggle function for mobile menu
   const toggleMenu = () => {
     setIsMenuOpen(!isMenuOpen);
   };
 
+  // Determine auth link text and destination
+  const authLinkHref = user ? "/dashboard" : "/login";
+  const authLinkText = user ? "Dashboard" : "Login";
+
   return (
     <>
       <header className={styles.header}>
         {/* Brand/Logo */}
-        <span className={styles.brand}>Carpool</span>
+        <Link href="/" className={styles.brand}>Carpool</Link>
 
         {/* Desktop Navigation - Hidden on mobile via CSS */}
         <nav className={styles.nav}>
-          <a href="#story">BOOK A RIDE</a>
-          <a href="#login">Login</a>
+          {!loading && (
+            <Link href={authLinkHref}>{authLinkText}</Link>
+          )}
         </nav>
 
         {/* Hamburger Menu Button - Visible only on mobile */}
@@ -48,9 +57,11 @@ export default function Header() {
 
         {/* Mobile Navigation Drawer - Slides in from right */}
         <div className={`${styles.mobileNav} ${isMenuOpen ? styles.mobileNavOpen : ""}`}>
-          {/* Close menu when link is clicked */}
-          <a href="#story" onClick={() => setIsMenuOpen(false)}>BOOK A RIDE</a>
-          <a href="#login" onClick={() => setIsMenuOpen(false)}>Login</a>
+          {!loading && (
+            <Link href={authLinkHref} onClick={() => setIsMenuOpen(false)}>
+              {authLinkText}
+            </Link>
+          )}
         </div>
       </header>
 
