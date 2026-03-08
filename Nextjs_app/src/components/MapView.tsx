@@ -23,6 +23,7 @@ interface MapViewProps {
   userLocation: { lat: number; lng: number } | null;
   destination: Location | null;
   nearbyRides: Ride[];
+  matchedRiderLocation?: { lat: number; lng: number } | null;
 }
 
 // Map container style
@@ -105,6 +106,7 @@ export default function MapView({
   userLocation,
   destination,
   nearbyRides,
+  matchedRiderLocation,
 }: MapViewProps) {
   const [map, setMap] = useState<google.maps.Map | null>(null);
 
@@ -240,6 +242,20 @@ export default function MapView({
             zIndex={80}
           />
         ))}
+
+        {/* Matched rider location (during chat) */}
+        {matchedRiderLocation && (
+          <Marker
+            position={matchedRiderLocation}
+            icon={{
+              url: '/assets/rider-marker.svg',
+              scaledSize: new google.maps.Size(48, 48),
+              anchor: new google.maps.Point(24, 24),
+            }}
+            title="Your match"
+            zIndex={95}
+          />
+        )}
       </GoogleMap>
     </div>
   );

@@ -10,12 +10,13 @@
  * - Match display when riders found
  */
 
-import { useState, useCallback, useEffect } from 'react';
+import { useState, useCallback, useEffect, useRef } from 'react';
 import Link from 'next/link';
 import { useAuth } from '@/components/AuthProvider';
 import MapView from '@/components/MapView';
 import RideCard from '@/components/RideCard';
 import PlacesAutocomplete from '@/components/PlacesAutocomplete';
+import ChatPopup from '@/components/ChatPopup';
 import { Ride, Location } from '@/types';
 import {
   collection,
@@ -54,6 +55,15 @@ export default function DashboardPage() {
   const [error, setError] = useState<string | null>(null);
   const [demoRideId, setDemoRideId] = useState<string | null>(null);
   const [isDemoMode, setIsDemoMode] = useState(false);
+
+  // Chat and matched rider state
+  const [isChatOpen, setIsChatOpen] = useState(false);
+  const [matchedRider, setMatchedRider] = useState<{
+    displayName: string;
+    photoURL: string;
+    location: { lat: number; lng: number };
+  } | null>(null);
+  const matchedRiderLocationRef = useRef<{ lat: number; lng: number } | null>(null);
 
   // Get user location on mount
   useEffect(() => {
@@ -266,9 +276,21 @@ export default function DashboardPage() {
         origin: currentRide.origin,
         destination: currentRide.destination,
         status: 'confirmed',
-        fare: 0, // Calculate based on destination
+        fare: 0,
         createdAt: Timestamp.now(),
       });
+
+      // Store matched rider info for chat
+      const riderLocation = {
+        lat: ride.origin.latitude,
+        lng: ride.origin.longitude,
+      };
+      setMatchedRider({
+        displayName: ride.displayName,
+        photoURL: ride.photoURL,
+        location: riderLocation,
+      });
+      matchedRiderLocationRef.current = riderLocation;
 
       // Clean up demo rider if it was a demo match
       if (demoRideId) {
@@ -279,13 +301,48 @@ export default function DashboardPage() {
       setCurrentRide(null);
       setNearbyRides([]);
       setIsSearching(false);
-      setDestination(null);
 
-      alert('Match confirmed! You can now meet your co-rider.');
+      // Open chat popup
+      setIsChatOpen(true);
     } catch (err) {
       console.error('Error accepting match:', err);
       setError('Failed to confirm match. Please try again.');
     }
+  };
+
+  // Simulate matched rider moving closer (for demo)
+  useEffect(() => {
+    if (!matchedRider || !userLocation || !isChatOpen) return;
+
+    const interval = setInterval(() => {
+      if (matchedRiderLocationRef.current && userLocation) {
+        const current = matchedRiderLocationRef.current;
+        // Move 10% closer to user each tick
+        const newLat = current.lat + (userLocation.lat - current.lat) * 0.1;
+        const newLng = current.lng + (userLocation.lng - current.lng) * 0.1;
+
+        matchedRiderLocationRef.current = { lat: newLat, lng: newLng };
+        setMatchedRider(prev => prev ? {
+          ...prev,
+          location: { lat: newLat, lng: newLng },
+        } : null);
+      }
+    }, 3000); // Update every 3 seconds
+
+    return () => clearInterval(interval);
+  }, [matchedRider, userLocation, isChatOpen]);
+
+  // Close chat and reset
+  const handleCloseChat = () => {
+    setIsChatOpen(false);
+    setMatchedRider(null);
+    matchedRiderLocationRef.current = null;
+    setDestination(null);
+  };
+
+  // Handle location share in chat
+  const handleLocationShare = () => {
+    // Location is already being tracked, this just triggers visual feedback
   };
 
   const [menuOpen, setMenuOpen] = useState(false);
@@ -378,6 +435,7 @@ export default function DashboardPage() {
           userLocation={userLocation}
           destination={destination}
           nearbyRides={nearbyRides}
+          matchedRiderLocation={matchedRider?.location}
         />
 
         {/* Status Banner */}
@@ -435,6 +493,21 @@ export default function DashboardPage() {
           </div>
         )}
       </div>
+
+      {/* Chat Popup */}
+      {matchedRider && (
+        <ChatPopup
+          isOpen={isChatOpen}
+          onClose={handleCloseChat}
+          matchedRider={{
+            displayName: matchedRider.displayName,
+            photoURL: matchedRider.photoURL,
+          }}
+          myLocation={userLocation}
+          theirLocation={matchedRider.location}
+          onLocationShare={handleLocationShare}
+        />
+      )}
     </div>
   );
 }

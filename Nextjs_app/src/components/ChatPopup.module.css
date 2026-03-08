@@ -1,0 +1,273 @@
+/**
+ * ChatPopup Styles - Minimal chat interface
+ */
+
+.overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.4);
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  z-index: 200;
+  padding: 16px;
+}
+
+.popup {
+  width: 100%;
+  max-width: 400px;
+  max-height: 70vh;
+  background: #ffffff;
+  border-radius: 20px 20px 16px 16px;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  box-shadow: 0 -8px 40px rgba(0, 0, 0, 0.15);
+  animation: slideUp 0.3s ease;
+}
+
+@keyframes slideUp {
+  from {
+    transform: translateY(100%);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+/* Header */
+.header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px 20px;
+  border-bottom: 1px solid rgba(17, 16, 14, 0.08);
+  background: #faf8f5;
+}
+
+.riderInfo {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.avatar {
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  border: 2px solid #d4af37;
+}
+
+.avatarPlaceholder {
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #d4af37 0%, #aa8a2e 100%);
+  color: #ffffff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 18px;
+  font-weight: 600;
+}
+
+.riderInfo h3 {
+  font-size: 15px;
+  font-weight: 600;
+  color: #11100e;
+  margin: 0;
+}
+
+.proximity {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  color: #6e6660;
+  margin-top: 2px;
+}
+
+.proximity.closer {
+  color: #22c55e;
+}
+
+.distanceIcon {
+  font-size: 10px;
+}
+
+.closerText {
+  font-size: 10px;
+  background: rgba(34, 197, 94, 0.15);
+  padding: 2px 6px;
+  border-radius: 4px;
+}
+
+.closeBtn {
+  width: 32px;
+  height: 32px;
+  border: none;
+  background: rgba(17, 16, 14, 0.05);
+  border-radius: 50%;
+  font-size: 20px;
+  color: #6e6660;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s ease;
+}
+
+.closeBtn:hover {
+  background: rgba(17, 16, 14, 0.1);
+  color: #11100e;
+}
+
+/* Messages */
+.messages {
+  flex: 1;
+  overflow-y: auto;
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  min-height: 200px;
+  max-height: 300px;
+  background: #f9f7f4;
+}
+
+.message {
+  max-width: 80%;
+  padding: 10px 14px;
+  border-radius: 16px;
+  position: relative;
+}
+
+.myMessage {
+  align-self: flex-end;
+  background: linear-gradient(135deg, #d4af37 0%, #aa8a2e 100%);
+  color: #ffffff;
+  border-bottom-right-radius: 4px;
+}
+
+.theirMessage {
+  align-self: flex-start;
+  background: #ffffff;
+  color: #11100e;
+  border-bottom-left-radius: 4px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+}
+
+.message p {
+  margin: 0;
+  font-size: 14px;
+  line-height: 1.4;
+}
+
+.time {
+  display: block;
+  font-size: 10px;
+  opacity: 0.7;
+  margin-top: 4px;
+}
+
+.locationMessage {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 12px;
+}
+
+.locationMessage svg {
+  width: 16px;
+  height: 16px;
+  flex-shrink: 0;
+}
+
+/* Input Area */
+.inputArea {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 16px;
+  border-top: 1px solid rgba(17, 16, 14, 0.08);
+  background: #ffffff;
+}
+
+.input {
+  flex: 1;
+  padding: 10px 14px;
+  border: 1px solid rgba(17, 16, 14, 0.12);
+  border-radius: 20px;
+  font-size: 14px;
+  font-family: inherit;
+  background: #f9f7f4;
+  color: #11100e;
+  transition: all 0.2s ease;
+}
+
+.input:focus {
+  outline: none;
+  border-color: #d4af37;
+  background: #ffffff;
+}
+
+.input::placeholder {
+  color: #a09a94;
+}
+
+.locationBtn,
+.sendBtn {
+  width: 40px;
+  height: 40px;
+  border: none;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.locationBtn {
+  background: rgba(17, 16, 14, 0.05);
+  color: #6e6660;
+}
+
+.locationBtn:hover {
+  background: rgba(34, 197, 94, 0.15);
+  color: #22c55e;
+}
+
+.locationBtn svg,
+.sendBtn svg {
+  width: 18px;
+  height: 18px;
+}
+
+.sendBtn {
+  background: linear-gradient(135deg, #d4af37 0%, #aa8a2e 100%);
+  color: #ffffff;
+}
+
+.sendBtn:hover {
+  transform: scale(1.05);
+}
+
+/* Responsive */
+@media (max-width: 480px) {
+  .popup {
+    max-height: 80vh;
+    border-radius: 20px 20px 0 0;
+  }
+
+  .overlay {
+    padding: 0;
+    align-items: flex-end;
+  }
+
+  .messages {
+    max-height: 40vh;
+  }
+}

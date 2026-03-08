@@ -6,6 +6,7 @@
  */
 
 import Link from 'next/link';
+import Header from '@/components/Header';
 import styles from './page.module.css';
 
 export const metadata = {
@@ -17,12 +18,9 @@ export default function HowItWorks() {
   return (
     <div className={styles.page}>
       {/* Header */}
-      <header className={styles.header}>
-        <Link href="/" className={styles.brand}>Carpool</Link>
-        <nav className={styles.nav}>
-          <Link href="/login">Login</Link>
-        </nav>
-      </header>
+      <div className={styles.headerWrapper}>
+        <Header />
+      </div>
 
       <main className={styles.main}>
         {/* Hero */}
