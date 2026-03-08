@@ -1,0 +1,191 @@
+/**
+ * Login Page Styles
+ *
+ * Matches landing page design system:
+ * - Gold (#d4af37), Ivory (#f6f1ea), Ink (#11100e)
+ * - Sora font for headings, IBM Plex Mono for accents
+ * - Frosted glass card effect
+ */
+
+.page {
+  --ivory: #f6f1ea;
+  --ink: #11100e;
+  --gold: #d4af37;
+  --gold-light: #f4d984;
+  --muted: #6e6660;
+
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+  background: radial-gradient(circle at top, #faf7f2, #f2ede6 52%, #eee7dd 100%);
+  position: relative;
+}
+
+/* Grid pattern overlay */
+.page::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background-image: linear-gradient(
+      rgba(17, 16, 14, 0.1) 1px,
+      transparent 1px
+    ),
+    linear-gradient(90deg, rgba(17, 16, 14, 0.1) 1px, transparent 1px);
+  background-size: 36px 36px;
+  opacity: 0.6;
+  pointer-events: none;
+}
+
+.card {
+  position: relative;
+  z-index: 1;
+  background: rgba(255, 255, 255, 0.7);
+  backdrop-filter: blur(20px);
+  border: 1px solid rgba(17, 16, 14, 0.1);
+  border-radius: 24px;
+  padding: 48px 40px;
+  max-width: 400px;
+  width: 100%;
+  text-align: center;
+  box-shadow: 0 20px 60px rgba(41, 34, 28, 0.1);
+}
+
+.brand {
+  font-size: 14px;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  font-weight: 600;
+  color: var(--gold);
+  margin-bottom: 24px;
+}
+
+.title {
+  font-size: 28px;
+  font-weight: 600;
+  color: var(--ink);
+  margin-bottom: 8px;
+  letter-spacing: -0.02em;
+}
+
+.subtitle {
+  font-size: 15px;
+  color: var(--muted);
+  margin-bottom: 32px;
+  line-height: 1.5;
+}
+
+.googleButton {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  width: 100%;
+  padding: 14px 24px;
+  border: 1px solid rgba(17, 16, 14, 0.15);
+  border-radius: 999px;
+  background: #ffffff;
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--ink);
+  cursor: pointer;
+  transition: all 0.2s ease;
+  font-family: inherit;
+}
+
+.googleButton:hover {
+  background: #fafafa;
+  border-color: rgba(17, 16, 14, 0.25);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+}
+
+.googleIcon {
+  flex-shrink: 0;
+}
+
+.terms {
+  margin-top: 24px;
+  font-size: 12px;
+  color: var(--muted);
+  line-height: 1.6;
+}
+
+.terms a {
+  color: var(--ink);
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
+.terms a:hover {
+  color: var(--gold);
+}
+
+.backLink {
+  display: inline-block;
+  margin-top: 24px;
+  font-size: 13px;
+  color: var(--muted);
+  text-decoration: none;
+  transition: color 0.2s ease;
+}
+
+.backLink:hover {
+  color: var(--ink);
+}
+
+.tagline {
+  position: relative;
+  z-index: 1;
+  margin-top: 40px;
+  padding: 12px 20px;
+  border-radius: 999px;
+  background: rgba(10, 10, 12, 0.05);
+  border: 1px solid rgba(17, 16, 14, 0.08);
+  font-size: 12px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+/* Loading state */
+.loading {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+  color: var(--muted);
+  font-size: 14px;
+}
+
+.spinner {
+  width: 32px;
+  height: 32px;
+  border: 3px solid rgba(212, 175, 55, 0.2);
+  border-top-color: var(--gold);
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* Responsive */
+@media (max-width: 480px) {
+  .card {
+    padding: 36px 24px;
+  }
+
+  .title {
+    font-size: 24px;
+  }
+
+  .tagline {
+    font-size: 10px;
+    padding: 10px 16px;
+  }
+}
