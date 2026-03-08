@@ -4,19 +4,19 @@
  * MapView Component
  *
  * Google Maps integration with:
- * - User location marker (custom gold icon)
- * - Destination marker (custom pin icon)
- * - Nearby riders markers (green person icon)
- * - Custom styling matching app theme
+ * - Smooth mobile navigation (pinch zoom, pan)
+ * - Cartoonish/playful map styling
+ * - Search radius circle visualization
+ * - Custom animated label markers
  */
 
-import { useCallback, useState } from 'react';
-import { GoogleMap, useJsApiLoader, Marker } from '@react-google-maps/api';
+import { useCallback, useState, useMemo, useEffect } from 'react';
+import { GoogleMap, useJsApiLoader, Circle, OverlayView } from '@react-google-maps/api';
+import { Ride, Location } from '@/types';
+import styles from './MapView.module.css';
 
 // Libraries to load
 const libraries: ("places")[] = ["places"];
-import { Ride, Location } from '@/types';
-import styles from './MapView.module.css';
 
 interface MapViewProps {
   center: { lat: number; lng: number } | null;
@@ -24,6 +24,8 @@ interface MapViewProps {
   destination: Location | null;
   nearbyRides: Ride[];
   matchedRiderLocation?: { lat: number; lng: number } | null;
+  searchRadius?: number; // in meters
+  focusLocation?: { lat: number; lng: number; timestamp: number } | null; // Pan to this location when set
 }
 
 // Map container style
@@ -38,68 +40,177 @@ const defaultCenter = {
   lng: 77.2090,
 };
 
-// Custom map styling for a muted, elegant look
-const mapStyles = [
+// Cartoonish/playful map styling - softer colors, rounded feel
+const cartoonMapStyles: google.maps.MapTypeStyle[] = [
+  // Base styling - soft cream/paper background
   {
     featureType: 'all',
     elementType: 'geometry',
-    stylers: [{ color: '#f5f5f5' }],
+    stylers: [{ color: '#faf6ef' }],
   },
   {
     featureType: 'all',
     elementType: 'labels.text.fill',
-    stylers: [{ color: '#6e6660' }],
+    stylers: [{ color: '#5c5a57' }],
   },
   {
     featureType: 'all',
     elementType: 'labels.text.stroke',
-    stylers: [{ color: '#ffffff' }],
+    stylers: [{ color: '#faf6ef' }, { weight: 3 }],
+  },
+  // Water - soft blue
+  {
+    featureType: 'water',
+    elementType: 'geometry',
+    stylers: [{ color: '#b8dae5' }],
   },
   {
-    featureType: 'poi',
-    elementType: 'geometry',
-    stylers: [{ color: '#ebe8e4' }],
+    featureType: 'water',
+    elementType: 'labels.text.fill',
+    stylers: [{ color: '#6a9caa' }],
   },
+  // Parks - soft green
   {
     featureType: 'poi.park',
     elementType: 'geometry',
-    stylers: [{ color: '#e5ebe7' }],
+    stylers: [{ color: '#c8e6c9' }],
   },
   {
-    featureType: 'road',
+    featureType: 'poi.park',
+    elementType: 'labels.text.fill',
+    stylers: [{ color: '#5a8a5c' }],
+  },
+  // Other POIs - warm beige
+  {
+    featureType: 'poi',
     elementType: 'geometry',
+    stylers: [{ color: '#f0e9df' }],
+  },
+  {
+    featureType: 'poi.business',
+    stylers: [{ visibility: 'off' }],
+  },
+  // Roads - clean white with soft borders
+  {
+    featureType: 'road',
+    elementType: 'geometry.fill',
     stylers: [{ color: '#ffffff' }],
   },
   {
     featureType: 'road',
     elementType: 'geometry.stroke',
-    stylers: [{ color: '#e8e4df' }],
+    stylers: [{ color: '#e8e2d9' }, { weight: 1 }],
   },
   {
     featureType: 'road.highway',
-    elementType: 'geometry',
-    stylers: [{ color: '#f8f4ef' }],
+    elementType: 'geometry.fill',
+    stylers: [{ color: '#ffefc3' }],
   },
+  {
+    featureType: 'road.highway',
+    elementType: 'geometry.stroke',
+    stylers: [{ color: '#e6d9a8' }],
+  },
+  {
+    featureType: 'road.arterial',
+    elementType: 'geometry.fill',
+    stylers: [{ color: '#fff8e8' }],
+  },
+  // Transit - soft purple
   {
     featureType: 'transit',
     elementType: 'geometry',
-    stylers: [{ color: '#e5e5e5' }],
+    stylers: [{ color: '#e8e0f0' }],
   },
   {
-    featureType: 'water',
+    featureType: 'transit.station',
+    elementType: 'labels.icon',
+    stylers: [{ saturation: -60 }, { lightness: 20 }],
+  },
+  // Buildings - warm grey
+  {
+    featureType: 'landscape.man_made',
     elementType: 'geometry',
-    stylers: [{ color: '#c9e4f0' }],
+    stylers: [{ color: '#f5f0e8' }],
+  },
+  // Administrative - hide most labels for cleaner look
+  {
+    featureType: 'administrative.land_parcel',
+    stylers: [{ visibility: 'off' }],
+  },
+  {
+    featureType: 'administrative.neighborhood',
+    stylers: [{ visibility: 'off' }],
   },
 ];
 
-const mapOptions: google.maps.MapOptions = {
-  styles: mapStyles,
-  disableDefaultUI: true,
-  zoomControl: true,
-  mapTypeControl: false,
-  streetViewControl: false,
-  fullscreenControl: false,
+// Generate a random pastel color based on a seed string
+const getRandomColor = (seed: string): string => {
+  const colors = [
+    '#FF6B6B', '#4ECDC4', '#45B7D1', '#96CEB4', '#FFEAA7',
+    '#DDA0DD', '#98D8C8', '#F7DC6F', '#BB8FCE', '#85C1E9',
+    '#F8B500', '#FF8C69', '#87CEEB', '#90EE90', '#FFB6C1',
+  ];
+  let hash = 0;
+  for (let i = 0; i < seed.length; i++) {
+    hash = seed.charCodeAt(i) + ((hash << 5) - hash);
+  }
+  return colors[Math.abs(hash) % colors.length];
 };
+
+// Custom Label Marker Component
+interface LabelMarkerProps {
+  position: { lat: number; lng: number };
+  label: string;
+  color?: string;
+  isUser?: boolean;
+  pulse?: boolean;
+}
+
+function LabelMarker({ position, label, color, isUser = false, pulse = false }: LabelMarkerProps) {
+  const markerColor = color || getRandomColor(label);
+
+  return (
+    <OverlayView
+      position={position}
+      mapPaneName={OverlayView.OVERLAY_MOUSE_TARGET}
+    >
+      <div className={`${styles.labelMarker} ${isUser ? styles.userMarker : ''} ${pulse ? styles.pulseMarker : ''}`}>
+        <div
+          className={styles.markerDot}
+          style={{ backgroundColor: markerColor }}
+        />
+        <div
+          className={styles.markerLabel}
+          style={{ backgroundColor: markerColor }}
+        >
+          {label}
+        </div>
+        {pulse && <div className={styles.markerPulse} style={{ borderColor: markerColor }} />}
+      </div>
+    </OverlayView>
+  );
+}
+
+// Destination Marker Component
+function DestinationMarker({ position, label }: { position: { lat: number; lng: number }; label: string }) {
+  return (
+    <OverlayView
+      position={position}
+      mapPaneName={OverlayView.OVERLAY_MOUSE_TARGET}
+    >
+      <div className={styles.destinationMarker}>
+        <div className={styles.destinationPin}>
+          <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7z" fill="#d4af37"/>
+            <circle cx="12" cy="9" r="3" fill="#ffffff"/>
+          </svg>
+        </div>
+        <div className={styles.destinationLabel}>{label}</div>
+      </div>
+    </OverlayView>
+  );
+}
 
 export default function MapView({
   center,
@@ -107,8 +218,18 @@ export default function MapView({
   destination,
   nearbyRides,
   matchedRiderLocation,
+  searchRadius = 100,
+  focusLocation,
 }: MapViewProps) {
   const [map, setMap] = useState<google.maps.Map | null>(null);
+
+  // Pan to focus location when it changes
+  useEffect(() => {
+    if (map && focusLocation) {
+      map.panTo({ lat: focusLocation.lat, lng: focusLocation.lng });
+      map.setZoom(18); // Zoom in for better view
+    }
+  }, [map, focusLocation?.timestamp]);
 
   const { isLoaded, loadError } = useJsApiLoader({
     googleMapsApiKey: process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY || '',
@@ -122,6 +243,57 @@ export default function MapView({
   const onUnmount = useCallback(() => {
     setMap(null);
   }, []);
+
+  // Map options optimized for mobile touch
+  const mapOptions: google.maps.MapOptions = useMemo(() => ({
+    styles: cartoonMapStyles,
+    disableDefaultUI: true,
+    zoomControl: false, // We'll add custom controls
+    mapTypeControl: false,
+    streetViewControl: false,
+    fullscreenControl: false,
+    // Mobile-friendly gesture handling
+    gestureHandling: 'greedy', // Allow one-finger pan
+    scrollwheel: true,
+    draggable: true,
+    // Smooth zoom
+    keyboardShortcuts: false,
+    clickableIcons: false,
+    // Restrict bounds to prevent scrolling too far
+    minZoom: 10,
+    maxZoom: 20,
+  }), []);
+
+  // Circle options for search radius
+  const circleOptions: google.maps.CircleOptions = useMemo(() => ({
+    strokeColor: '#d4af37',
+    strokeOpacity: 0.8,
+    strokeWeight: 2,
+    fillColor: '#d4af37',
+    fillOpacity: 0.1,
+    clickable: false,
+  }), []);
+
+  // Center on user location
+  const handleRecenter = useCallback(() => {
+    if (map && userLocation) {
+      map.panTo(userLocation);
+      map.setZoom(16);
+    }
+  }, [map, userLocation]);
+
+  // Zoom controls
+  const handleZoomIn = useCallback(() => {
+    if (map) {
+      map.setZoom((map.getZoom() || 16) + 1);
+    }
+  }, [map]);
+
+  const handleZoomOut = useCallback(() => {
+    if (map) {
+      map.setZoom((map.getZoom() || 16) - 1);
+    }
+  }, [map]);
 
   // Error state
   if (loadError) {
@@ -138,15 +310,6 @@ export default function MapView({
           <span style={{ maxWidth: 300, textAlign: 'center' }}>
             Please enable "Maps JavaScript API" in your Google Cloud Console
           </span>
-          <code style={{
-            marginTop: 8,
-            padding: '8px 12px',
-            background: 'rgba(0,0,0,0.05)',
-            borderRadius: 6,
-            fontSize: 11
-          }}>
-            {loadError.message}
-          </code>
         </div>
       </div>
     );
@@ -177,11 +340,6 @@ export default function MapView({
           </div>
           <p>Maps API key required</p>
           <span>Add NEXT_PUBLIC_GOOGLE_MAPS_API_KEY to .env.local</span>
-          {userLocation && (
-            <div className={styles.coords}>
-              Your location: {userLocation.lat.toFixed(4)}, {userLocation.lng.toFixed(4)}
-            </div>
-          )}
         </div>
       </div>
     );
@@ -197,66 +355,89 @@ export default function MapView({
         onUnmount={onUnmount}
         options={mapOptions}
       >
-        {/* User location marker with fun avatar icon */}
+        {/* Search radius circle */}
         {userLocation && (
-          <Marker
+          <Circle
+            center={userLocation}
+            radius={searchRadius}
+            options={circleOptions}
+          />
+        )}
+
+        {/* User location marker */}
+        {userLocation && (
+          <LabelMarker
             position={userLocation}
-            icon={{
-              url: '/assets/user-marker.svg',
-              scaledSize: new google.maps.Size(64, 64),
-              anchor: new google.maps.Point(32, 58),
-            }}
-            title="You are here"
-            zIndex={100}
+            label="You"
+            color="#d4af37"
+            isUser={true}
+            pulse={true}
           />
         )}
 
-        {/* Destination marker with custom icon */}
+        {/* Destination marker */}
         {destination && (
-          <Marker
+          <DestinationMarker
             position={{ lat: destination.lat, lng: destination.lng }}
-            icon={{
-              url: '/assets/destination-marker.svg',
-              scaledSize: new google.maps.Size(40, 52),
-              anchor: new google.maps.Point(20, 52),
-            }}
-            title={destination.address}
-            zIndex={90}
+            label={destination.address.split(',')[0]}
           />
         )}
 
-        {/* Nearby riders with custom icon */}
+        {/* Nearby riders markers */}
         {nearbyRides.map((ride) => (
-          <Marker
+          <LabelMarker
             key={ride.id}
             position={{
               lat: ride.origin.latitude,
               lng: ride.origin.longitude,
             }}
-            icon={{
-              url: '/assets/rider-marker.svg',
-              scaledSize: new google.maps.Size(40, 40),
-              anchor: new google.maps.Point(20, 20),
-            }}
-            title={ride.displayName}
-            zIndex={80}
+            label={ride.displayName.split(' ')[0]}
           />
         ))}
 
         {/* Matched rider location (during chat) */}
         {matchedRiderLocation && (
-          <Marker
+          <LabelMarker
             position={matchedRiderLocation}
-            icon={{
-              url: '/assets/rider-marker.svg',
-              scaledSize: new google.maps.Size(48, 48),
-              anchor: new google.maps.Point(24, 24),
-            }}
-            title="Your match"
-            zIndex={95}
+            label="Match"
+            color="#4ECDC4"
+            pulse={true}
           />
         )}
       </GoogleMap>
+
+      {/* Custom map controls */}
+      <div className={styles.mapControls}>
+        <button
+          className={styles.controlBtn}
+          onClick={handleZoomIn}
+          aria-label="Zoom in"
+        >
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+            <line x1="12" y1="5" x2="12" y2="19" />
+            <line x1="5" y1="12" x2="19" y2="12" />
+          </svg>
+        </button>
+        <button
+          className={styles.controlBtn}
+          onClick={handleZoomOut}
+          aria-label="Zoom out"
+        >
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+            <line x1="5" y1="12" x2="19" y2="12" />
+          </svg>
+        </button>
+        <button
+          className={styles.controlBtn}
+          onClick={handleRecenter}
+          aria-label="Recenter on location"
+        >
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+            <circle cx="12" cy="12" r="3" />
+            <path d="M12 2v4M12 18v4M2 12h4M18 12h4" />
+          </svg>
+        </button>
+      </div>
     </div>
   );
 }

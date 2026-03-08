@@ -35,7 +35,6 @@ import { geohashForLocation, geohashQueryBounds } from 'geofire-common';
 import styles from './page.module.css';
 
 // Constants
-const MATCH_RADIUS_KM = 0.1; // 100 meters
 const RIDE_EXPIRY_MINUTES = 10;
 
 // Demo rider data
@@ -55,6 +54,7 @@ export default function DashboardPage() {
   const [error, setError] = useState<string | null>(null);
   const [demoRideId, setDemoRideId] = useState<string | null>(null);
   const [isDemoMode, setIsDemoMode] = useState(false);
+  const [searchRadius, setSearchRadius] = useState(100); // in meters
 
   // Chat and matched rider state
   const [isChatOpen, setIsChatOpen] = useState(false);
@@ -64,6 +64,13 @@ export default function DashboardPage() {
     location: { lat: number; lng: number };
   } | null>(null);
   const matchedRiderLocationRef = useRef<{ lat: number; lng: number } | null>(null);
+
+  // Focus location for map panning
+  const [focusLocation, setFocusLocation] = useState<{
+    lat: number;
+    lng: number;
+    timestamp: number;
+  } | null>(null);
 
   // Get user location on mount
   useEffect(() => {
@@ -102,7 +109,7 @@ export default function DashboardPage() {
 
     const bounds = geohashQueryBounds(
       [userLocation.lat, userLocation.lng],
-      MATCH_RADIUS_KM * 1000 // Convert km to meters
+      searchRadius // Already in meters
     );
 
     const unsubscribes: (() => void)[] = [];
@@ -135,7 +142,7 @@ export default function DashboardPage() {
     });
 
     return () => unsubscribes.forEach((unsub) => unsub());
-  }, [userLocation, currentRide, user?.uid]);
+  }, [userLocation, currentRide, user?.uid, searchRadius]);
 
   // Create ride request
   const handleFindRide = useCallback(async () => {
@@ -345,6 +352,24 @@ export default function DashboardPage() {
     // Location is already being tracked, this just triggers visual feedback
   };
 
+  // Handle view location from chat - minimize chat and pan map to location
+  const handleViewLocation = useCallback((location: { lat: number; lng: number }, isMe: boolean) => {
+    // Close/minimize chat to show map
+    setIsChatOpen(false);
+
+    // Pan map to the location
+    setFocusLocation({
+      lat: location.lat,
+      lng: location.lng,
+      timestamp: Date.now(),
+    });
+
+    // Reopen chat after a short delay so user can see the map
+    setTimeout(() => {
+      setIsChatOpen(true);
+    }, 2000);
+  }, []);
+
   const [menuOpen, setMenuOpen] = useState(false);
 
   return (
@@ -406,6 +431,8 @@ export default function DashboardPage() {
               placeholder="Where are you heading?"
               onPlaceSelect={handlePlaceSelect}
               disabled={isSearching}
+              radius={searchRadius}
+              onRadiusChange={setSearchRadius}
             />
           </div>
         )}
@@ -436,6 +463,8 @@ export default function DashboardPage() {
           destination={destination}
           nearbyRides={nearbyRides}
           matchedRiderLocation={matchedRider?.location}
+          searchRadius={searchRadius}
+          focusLocation={focusLocation}
         />
 
         {/* Status Banner */}
@@ -506,6 +535,7 @@ export default function DashboardPage() {
           myLocation={userLocation}
           theirLocation={matchedRider.location}
           onLocationShare={handleLocationShare}
+          onViewLocation={handleViewLocation}
         />
       )}
     </div>

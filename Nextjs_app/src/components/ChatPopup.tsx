@@ -31,6 +31,7 @@ interface ChatPopupProps {
   myLocation: { lat: number; lng: number } | null;
   theirLocation: { lat: number; lng: number } | null;
   onLocationShare: () => void;
+  onViewLocation: (location: { lat: number; lng: number }, isMe: boolean) => void;
 }
 
 // Calculate distance between two points in meters
@@ -56,6 +57,7 @@ export default function ChatPopup({
   myLocation,
   theirLocation,
   onLocationShare,
+  onViewLocation,
 }: ChatPopupProps) {
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [inputText, setInputText] = useState('');
@@ -230,16 +232,21 @@ export default function ChatPopup({
             >
               {msg.text && <p>{msg.text}</p>}
               {msg.location && (
-                <div className={styles.locationMessage}>
+                <button
+                  className={styles.locationMessage}
+                  onClick={() => onViewLocation(msg.location!, msg.sender === 'me')}
+                >
                   <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                     <path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7z" />
                     <circle cx="12" cy="9" r="2.5" />
                   </svg>
                   <span>
-                    {msg.sender === 'me' ? 'My location' : 'Their location'}:
-                    {msg.location.lat.toFixed(4)}, {msg.location.lng.toFixed(4)}
+                    {msg.sender === 'me' ? 'View my location on map' : `View ${matchedRider.displayName.split(' ')[0]}'s location`}
                   </span>
-                </div>
+                  <svg className={styles.arrowIcon} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                    <path d="M5 12h14M12 5l7 7-7 7"/>
+                  </svg>
+                </button>
               )}
               <span className={styles.time}>
                 {msg.timestamp.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
