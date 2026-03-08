@@ -5,6 +5,16 @@
 import { Timestamp, GeoPoint } from 'firebase/firestore';
 
 /**
+ * Gender options
+ */
+export type Gender = 'male' | 'female' | 'other' | 'prefer_not_to_say';
+
+/**
+ * Gender preference for ride matching
+ */
+export type GenderPreference = 'any' | 'same_gender' | 'women_only';
+
+/**
  * User profile stored in Firestore /users collection
  */
 export interface User {
@@ -13,6 +23,18 @@ export interface User {
   email: string;
   photoURL: string;
   createdAt: Timestamp;
+  // New fields
+  phoneNumber?: string;
+  phoneVerified: boolean;
+  gender?: Gender;
+  genderPreference: GenderPreference;
+  emergencyContact?: {
+    name: string;
+    phone: string;
+  };
+  rating: number;
+  totalRatings: number;
+  blockedUsers: string[];
 }
 
 /**
@@ -39,28 +61,92 @@ export interface Ride {
   status: 'searching' | 'matched' | 'completed' | 'expired' | 'cancelled';
   createdAt: Timestamp;
   expiresAt: Timestamp;
+  // New fields
+  gender?: Gender;
+  genderPreference?: GenderPreference;
+  phoneVerified?: boolean;
+  rating?: number;
 }
 
 /**
- * Match between two riders
+ * Rider info for matches
+ */
+export interface RiderInfo {
+  uid: string;
+  displayName: string;
+  photoURL: string;
+  phoneNumber?: string;
+  rating?: number;
+}
+
+/**
+ * Group match between multiple riders (up to 4)
+ */
+export interface GroupMatch {
+  id?: string;
+  riders: RiderInfo[];
+  origin: GeoPoint;
+  destination: Location;
+  status: 'pending' | 'confirmed' | 'in_progress' | 'completed' | 'cancelled';
+  createdAt: Timestamp;
+  createdBy: string;
+}
+
+/**
+ * Match between two riders (legacy, keeping for compatibility)
  */
 export interface Match {
   id?: string;
-  riderA: {
-    uid: string;
-    displayName: string;
-    photoURL: string;
-  };
-  riderB: {
-    uid: string;
-    displayName: string;
-    photoURL: string;
-  };
+  riderA: RiderInfo;
+  riderB: RiderInfo;
   origin: GeoPoint;
   destination: Location;
   status: 'pending' | 'confirmed' | 'completed' | 'cancelled';
   fare: number;
   createdAt: Timestamp;
+}
+
+/**
+ * Rating given after a ride
+ */
+export interface Rating {
+  id?: string;
+  fromUserId: string;
+  toUserId: string;
+  matchId: string;
+  rating: number; // 1-5 stars
+  comment?: string;
+  createdAt: Timestamp;
+}
+
+/**
+ * SOS Alert
+ */
+export interface SOSAlert {
+  id?: string;
+  userId: string;
+  location: GeoPoint;
+  timestamp: Timestamp;
+  emergencyContact: {
+    name: string;
+    phone: string;
+  };
+  matchId?: string;
+  resolved: boolean;
+}
+
+/**
+ * Chat message for group chat
+ */
+export interface ChatMessage {
+  id: string;
+  senderId: string;
+  senderName: string;
+  senderPhoto?: string;
+  text?: string;
+  location?: { lat: number; lng: number };
+  timestamp: Date;
+  type: 'text' | 'location' | 'system';
 }
 
 /**
@@ -71,4 +157,5 @@ export interface AuthContextValue {
   loading: boolean;
   signInWithGoogle: () => Promise<void>;
   signOut: () => Promise<void>;
+  updateProfile: (data: Partial<User>) => Promise<void>;
 }
