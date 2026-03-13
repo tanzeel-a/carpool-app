@@ -2,6 +2,7 @@ import type { Metadata, Viewport } from "next";
 import { IBM_Plex_Mono, Sora } from "next/font/google";
 import "./globals.css";
 import { AuthProvider } from "@/components/AuthProvider";
+import PageLoader from "@/components/PageLoader";
 
 const sora = Sora({
   variable: "--font-sora",
@@ -44,6 +45,7 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body className={`${sora.variable} ${ibmPlexMono.variable}`}>
+        <PageLoader minDisplayTime={1000} />
         <AuthProvider>
           {children}
         </AuthProvider>

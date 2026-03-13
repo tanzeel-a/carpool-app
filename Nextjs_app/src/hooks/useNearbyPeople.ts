@@ -75,6 +75,13 @@ export function useNearbyPeople(options: UseNearbyPeopleOptions) {
       radius
     );
 
+    console.log('[NearbyPeople] Querying with:', {
+      userLocation,
+      radius,
+      bounds,
+      currentUserId: user.uid,
+    });
+
     const unsubscribes: (() => void)[] = [];
     const peopleMap = new Map<string, NearbyPerson>();
 
@@ -90,16 +97,32 @@ export function useNearbyPeople(options: UseNearbyPeopleOptions) {
       const unsubscribe = onSnapshot(
         q,
         (snapshot) => {
+          console.log('[NearbyPeople] Snapshot received:', snapshot.docs.length, 'docs');
+
           snapshot.docChanges().forEach((change) => {
             const docData = change.doc.data() as UserPresence;
             const personId = change.doc.id;
+
+            console.log('[NearbyPeople] Doc change:', {
+              type: change.type,
+              personId,
+              uid: docData.uid,
+              isOnline: docData.isOnline,
+              displayName: docData.displayName,
+            });
 
             if (change.type === 'removed') {
               peopleMap.delete(personId);
             } else {
               // Filter out self and blocked users
-              if (docData.uid === user.uid) return;
-              if (blockedUsers.includes(docData.uid)) return;
+              if (docData.uid === user.uid) {
+                console.log('[NearbyPeople] Filtering out self:', docData.uid);
+                return;
+              }
+              if (blockedUsers.includes(docData.uid)) {
+                console.log('[NearbyPeople] Filtering out blocked user:', docData.uid);
+                return;
+              }
 
               // Check if user is within actual radius (geohash is approximate)
               const distance = calculateDistance(
@@ -108,6 +131,13 @@ export function useNearbyPeople(options: UseNearbyPeopleOptions) {
                 docData.location.latitude,
                 docData.location.longitude
               );
+
+              console.log('[NearbyPeople] Distance check:', {
+                uid: docData.uid,
+                distance,
+                radius,
+                withinRadius: distance <= radius,
+              });
 
               if (distance <= radius) {
                 // Check if presence is stale (more than 10 minutes old)
@@ -122,6 +152,12 @@ export function useNearbyPeople(options: UseNearbyPeopleOptions) {
                 }
                 const staleThreshold = 10 * 60 * 1000; // 10 minutes
                 const isStale = Date.now() - lastUpdatedTime > staleThreshold;
+
+                console.log('[NearbyPeople] Staleness check:', {
+                  uid: docData.uid,
+                  lastUpdatedTime,
+                  isStale,
+                });
 
                 if (!isStale) {
                   const person: NearbyPerson = {
@@ -138,9 +174,11 @@ export function useNearbyPeople(options: UseNearbyPeopleOptions) {
                     broadcast: docData.broadcast,
                   };
                   peopleMap.set(personId, person);
+                  console.log('[NearbyPeople] Added person:', docData.displayName);
                 }
               } else {
                 // Outside radius, remove
+                console.log('[NearbyPeople] Outside radius, removing:', docData.uid);
                 peopleMap.delete(personId);
               }
             }

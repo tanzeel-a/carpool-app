@@ -79,11 +79,19 @@ export function useUserPresence(options: UseUserPresenceOptions = {}) {
         ...(broadcast && { broadcast }),
       };
 
+      console.log('[Presence] Updating presence:', {
+        uid: user.uid,
+        geohash,
+        location: newLocation,
+        isOnline: true,
+      });
+
       await setDoc(presenceRef, presenceData, { merge: true });
+      console.log('[Presence] Successfully updated presence for:', user.uid);
       setIsOnline(true);
       setError(null);
     } catch (err) {
-      console.error('Error updating presence:', err);
+      console.error('[Presence] Error updating presence:', err);
       setError('Failed to update presence');
     }
   }, [user, presenceDocId, updateInterval, isSearching, broadcast]);
