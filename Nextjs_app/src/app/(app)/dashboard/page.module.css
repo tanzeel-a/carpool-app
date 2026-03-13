@@ -159,6 +159,14 @@
   gap: 12px;
 }
 
+/* Mobile notification bell - always visible */
+.mobileNotificationBell {
+  display: none;
+  position: absolute;
+  right: 16px;
+  z-index: 110;
+}
+
 .avatar {
   width: 32px;
   height: 32px;
@@ -556,6 +564,10 @@
 
   .userInfo {
     display: none;
+  }
+
+  .mobileNotificationBell {
+    display: block;
   }
 
   .headerSearch {

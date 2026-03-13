@@ -20,11 +20,13 @@ import ChatPopup from '@/components/ChatPopup';
 import MatchRequestModal from '@/components/MatchRequestModal';
 import MinimizableChat, { ChatBubbles } from '@/components/MinimizableChat';
 import GroupRidePanel from '@/components/GroupRidePanel';
+import NotificationBell from '@/components/NotificationBell';
+import NotificationToast from '@/components/NotificationToast';
 import { useUserPresence } from '@/hooks/useUserPresence';
 import { useNearbyPeople } from '@/hooks/useNearbyPeople';
 import { useMatchRequests } from '@/hooks/useMatchRequests';
 import { useChats } from '@/hooks/useChat';
-import { Ride, Location, NearbyPerson, GroupRide } from '@/types';
+import { Ride, Location, NearbyPerson, GroupRide, MatchRequest } from '@/types';
 import {
   collection,
   query,
@@ -223,6 +225,32 @@ export default function DashboardPage() {
     if (!currentIncomingRequest) return;
     await rejectRequest(currentIncomingRequest.id);
   }, [currentIncomingRequest, rejectRequest]);
+
+  // Handle notification bell click - open modal for specific request
+  const handleNotificationClick = useCallback((request: MatchRequest) => {
+    // The request is already in incomingRequests, modal will show it
+    console.log('Notification clicked:', request.fromUser.displayName);
+  }, []);
+
+  // Handle toast accept/decline
+  const handleToastAccept = useCallback(async (request: MatchRequest) => {
+    setMatchRequestLoading(true);
+    const chatId = await acceptRequest(request.id);
+    setMatchRequestLoading(false);
+
+    if (chatId) {
+      setActiveChatId(chatId);
+      setActiveChatParticipant({
+        uid: request.fromUserId,
+        displayName: request.fromUser.displayName,
+        photoURL: request.fromUser.photoURL,
+      });
+    }
+  }, [acceptRequest]);
+
+  const handleToastDecline = useCallback(async (request: MatchRequest) => {
+    await rejectRequest(request.id);
+  }, [rejectRequest]);
 
   // Open a chat from the bubbles
   const handleChatBubbleClick = useCallback((chatId: string) => {
@@ -638,6 +666,14 @@ export default function DashboardPage() {
           </div>
         )}
 
+        {/* Mobile notification bell */}
+        <div className={styles.mobileNotificationBell}>
+          <NotificationBell
+            incomingRequests={incomingRequests}
+            onRequestClick={handleNotificationClick}
+          />
+        </div>
+
         {/* Brand - hidden on mobile, shown on desktop */}
         <Link href="/" className={styles.brand}>Carpool</Link>
 
@@ -654,8 +690,12 @@ export default function DashboardPage() {
           </div>
         )}
 
-        {/* Desktop user info */}
+        {/* Desktop user info with notification bell */}
         <div className={styles.userInfo}>
+          <NotificationBell
+            incomingRequests={incomingRequests}
+            onRequestClick={handleNotificationClick}
+          />
           {user?.photoURL && (
             <img
               src={user.photoURL}
@@ -779,6 +819,13 @@ export default function DashboardPage() {
         onAcceptRequest={handleAcceptMatchRequest}
         onDeclineRequest={handleDeclineMatchRequest}
         loading={matchRequestLoading}
+      />
+
+      {/* Slide-in Toast Notifications from the right */}
+      <NotificationToast
+        incomingRequests={incomingRequests}
+        onAccept={handleToastAccept}
+        onDecline={handleToastDecline}
       />
 
       {/* Minimizable Persistent Chat */}
