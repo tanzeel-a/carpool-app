@@ -17,7 +17,14 @@ import MapView from '@/components/MapView';
 import RideCard from '@/components/RideCard';
 import PlacesAutocomplete from '@/components/PlacesAutocomplete';
 import ChatPopup from '@/components/ChatPopup';
-import { Ride, Location } from '@/types';
+import MatchRequestModal from '@/components/MatchRequestModal';
+import MinimizableChat, { ChatBubbles } from '@/components/MinimizableChat';
+import GroupRidePanel from '@/components/GroupRidePanel';
+import { useUserPresence } from '@/hooks/useUserPresence';
+import { useNearbyPeople } from '@/hooks/useNearbyPeople';
+import { useMatchRequests } from '@/hooks/useMatchRequests';
+import { useChats } from '@/hooks/useChat';
+import { Ride, Location, NearbyPerson, GroupRide } from '@/types';
 import {
   collection,
   query,
@@ -71,6 +78,177 @@ export default function DashboardPage() {
     lng: number;
     timestamp: number;
   } | null>(null);
+
+  // ============================================
+  // Nearby People Feature State
+  // ============================================
+  const [selectedPerson, setSelectedPerson] = useState<NearbyPerson | null>(null);
+  const [activeChatId, setActiveChatId] = useState<string | null>(null);
+  const [activeChatParticipant, setActiveChatParticipant] = useState<{
+    uid: string;
+    displayName: string;
+    photoURL: string;
+  } | null>(null);
+  const [groupRide, setGroupRide] = useState<GroupRide | null>(null);
+  const [matchRequestLoading, setMatchRequestLoading] = useState(false);
+
+  // ============================================
+  // Nearby People Hooks
+  // ============================================
+
+  // User presence - updates location and online status
+  const {
+    location: presenceLocation,
+    isOnline,
+    setBroadcastMessage,
+  } = useUserPresence({ enabled: !!user });
+
+  // Use presence location if available, otherwise fall back to local state
+  useEffect(() => {
+    if (presenceLocation) {
+      setUserLocation(presenceLocation);
+    }
+  }, [presenceLocation]);
+
+  // Nearby people - query nearby users
+  const { nearbyPeople } = useNearbyPeople({
+    userLocation,
+    radius: searchRadius,
+    enabled: !!user && !!userLocation,
+  });
+
+  // Match requests - handle incoming/outgoing requests
+  const {
+    incomingRequests,
+    outgoingRequests,
+    sendRequest,
+    acceptRequest,
+    rejectRequest,
+    cancelRequest,
+  } = useMatchRequests();
+
+  // All user chats
+  const { chats } = useChats();
+
+  // Get the first incoming request for modal display
+  const currentIncomingRequest = incomingRequests[0] || null;
+
+  // ============================================
+  // Nearby People Handlers
+  // ============================================
+
+  // Handle clicking on a nearby person marker
+  const handlePersonClick = useCallback((person: NearbyPerson) => {
+    setSelectedPerson(person);
+  }, []);
+
+  // Send match request to selected person
+  const handleSendMatchRequest = useCallback(async (message: string) => {
+    if (!selectedPerson) return;
+
+    setMatchRequestLoading(true);
+    const requestId = await sendRequest(selectedPerson, message);
+    setMatchRequestLoading(false);
+
+    if (requestId) {
+      setSelectedPerson(null);
+    }
+  }, [selectedPerson, sendRequest]);
+
+  // Accept incoming match request
+  const handleAcceptMatchRequest = useCallback(async () => {
+    if (!currentIncomingRequest) return;
+
+    setMatchRequestLoading(true);
+    const chatId = await acceptRequest(currentIncomingRequest.id);
+    setMatchRequestLoading(false);
+
+    if (chatId) {
+      // Open chat with the person
+      setActiveChatId(chatId);
+      setActiveChatParticipant({
+        uid: currentIncomingRequest.fromUserId,
+        displayName: currentIncomingRequest.fromUser.displayName,
+        photoURL: currentIncomingRequest.fromUser.photoURL,
+      });
+    }
+  }, [currentIncomingRequest, acceptRequest]);
+
+  // Decline incoming match request
+  const handleDeclineMatchRequest = useCallback(async () => {
+    if (!currentIncomingRequest) return;
+    await rejectRequest(currentIncomingRequest.id);
+  }, [currentIncomingRequest, rejectRequest]);
+
+  // Close match request modal (cancel send mode)
+  const handleCancelSendRequest = useCallback(() => {
+    setSelectedPerson(null);
+  }, []);
+
+  // Open a chat from the bubbles
+  const handleChatBubbleClick = useCallback((chatId: string) => {
+    const chat = chats.find(c => c.id === chatId);
+    if (chat && user) {
+      const otherParticipantId = chat.participants.find(p => p !== user.uid);
+      if (otherParticipantId) {
+        const otherParticipant = chat.participantDetails[otherParticipantId];
+        setActiveChatId(chatId);
+        setActiveChatParticipant({
+          uid: otherParticipantId,
+          displayName: otherParticipant.displayName,
+          photoURL: otherParticipant.photoURL,
+        });
+      }
+    }
+  }, [chats, user]);
+
+  // Close active chat
+  const handleClosePersistentChat = useCallback(() => {
+    setActiveChatId(null);
+    setActiveChatParticipant(null);
+  }, []);
+
+  // Handle view location from persistent chat
+  const handleViewLocationFromChat = useCallback((location: { lat: number; lng: number }) => {
+    setFocusLocation({
+      lat: location.lat,
+      lng: location.lng,
+      timestamp: Date.now(),
+    });
+  }, []);
+
+  // Set broadcast when destination is selected
+  useEffect(() => {
+    if (destination && userLocation) {
+      setBroadcastMessage({
+        message: `Heading to ${destination.address.split(',')[0]}`,
+        originAddress: 'Current Location',
+        destinationAddress: destination.address,
+        destination,
+      });
+    } else {
+      setBroadcastMessage(null);
+    }
+  }, [destination, userLocation, setBroadcastMessage]);
+
+  // Group ride handlers (placeholder implementations)
+  const handleInviteToGroupRide = useCallback((person: NearbyPerson) => {
+    // TODO: Implement group ride invite
+    console.log('Invite to group ride:', person);
+  }, []);
+
+  const handleStartGroupRide = useCallback(() => {
+    // TODO: Implement start group ride
+    console.log('Start group ride');
+  }, []);
+
+  const handleCancelGroupRide = useCallback(() => {
+    setGroupRide(null);
+  }, []);
+
+  const handleLeaveGroupRide = useCallback(() => {
+    setGroupRide(null);
+  }, []);
 
   // Get user location on mount
   useEffect(() => {
@@ -465,6 +643,9 @@ export default function DashboardPage() {
           matchedRiderLocation={matchedRider?.location}
           searchRadius={searchRadius}
           focusLocation={focusLocation}
+          nearbyPeople={nearbyPeople}
+          selectedPersonId={selectedPerson?.id}
+          onPersonClick={handlePersonClick}
         />
 
         {/* Status Banner */}
@@ -523,7 +704,7 @@ export default function DashboardPage() {
         )}
       </div>
 
-      {/* Chat Popup */}
+      {/* Chat Popup (legacy - for ride matches) */}
       {matchedRider && (
         <ChatPopup
           isOpen={isChatOpen}
@@ -536,6 +717,61 @@ export default function DashboardPage() {
           theirLocation={matchedRider.location}
           onLocationShare={handleLocationShare}
           onViewLocation={handleViewLocation}
+        />
+      )}
+
+      {/* ============================================
+          Nearby People Feature Components
+          ============================================ */}
+
+      {/* Match Request Modal - Send mode (clicking on a person) */}
+      <MatchRequestModal
+        targetPerson={selectedPerson}
+        onSendRequest={handleSendMatchRequest}
+        onCancelSend={handleCancelSendRequest}
+        loading={matchRequestLoading}
+      />
+
+      {/* Match Request Modal - Receive mode (incoming request) */}
+      <MatchRequestModal
+        incomingRequest={currentIncomingRequest}
+        onAcceptRequest={handleAcceptMatchRequest}
+        onDeclineRequest={handleDeclineMatchRequest}
+        loading={matchRequestLoading}
+      />
+
+      {/* Minimizable Persistent Chat */}
+      {activeChatId && activeChatParticipant && (
+        <MinimizableChat
+          chatId={activeChatId}
+          otherParticipant={activeChatParticipant}
+          isInitiallyExpanded={true}
+          onClose={handleClosePersistentChat}
+          onViewLocation={handleViewLocationFromChat}
+          myLocation={userLocation}
+        />
+      )}
+
+      {/* Chat Bubbles for other chats */}
+      {user && (
+        <ChatBubbles
+          chats={chats}
+          activeChatId={activeChatId}
+          onChatClick={handleChatBubbleClick}
+          currentUserId={user.uid}
+        />
+      )}
+
+      {/* Group Ride Panel */}
+      {groupRide && (
+        <GroupRidePanel
+          groupRide={groupRide}
+          isHost={groupRide.hostId === user?.uid}
+          nearbyPeople={nearbyPeople}
+          onInvitePerson={handleInviteToGroupRide}
+          onStartRide={handleStartGroupRide}
+          onCancelRide={handleCancelGroupRide}
+          onLeaveRide={handleLeaveGroupRide}
         />
       )}
     </div>

@@ -12,7 +12,9 @@
 
 import { useCallback, useState, useMemo, useEffect } from 'react';
 import { GoogleMap, useJsApiLoader, Circle, OverlayView } from '@react-google-maps/api';
-import { Ride, Location } from '@/types';
+import { Ride, Location, NearbyPerson } from '@/types';
+import ProfileImageMarker from './ProfileImageMarker';
+import BroadcastBubble from './BroadcastBubble';
 import styles from './MapView.module.css';
 
 // Libraries to load
@@ -26,6 +28,10 @@ interface MapViewProps {
   matchedRiderLocation?: { lat: number; lng: number } | null;
   searchRadius?: number; // in meters
   focusLocation?: { lat: number; lng: number; timestamp: number } | null; // Pan to this location when set
+  // Nearby people feature
+  nearbyPeople?: NearbyPerson[];
+  selectedPersonId?: string | null;
+  onPersonClick?: (person: NearbyPerson) => void;
 }
 
 // Map container style
@@ -227,6 +233,9 @@ export default function MapView({
   matchedRiderLocation,
   searchRadius = 100,
   focusLocation,
+  nearbyPeople = [],
+  selectedPersonId,
+  onPersonClick,
 }: MapViewProps) {
   const [map, setMap] = useState<google.maps.Map | null>(null);
 
@@ -411,6 +420,28 @@ export default function MapView({
             pulse={true}
           />
         )}
+
+        {/* Nearby people markers (profile image pins) */}
+        {nearbyPeople.map((person, index) => (
+          <ProfileImageMarker
+            key={person.id}
+            person={person}
+            onClick={onPersonClick}
+            isSelected={selectedPersonId === person.id}
+            animationDelay={index * 100}
+          />
+        ))}
+
+        {/* Broadcast bubbles for people with active broadcasts */}
+        {nearbyPeople
+          .filter((person) => person.broadcast)
+          .map((person) => (
+            <BroadcastBubble
+              key={`broadcast-${person.id}`}
+              person={person}
+              onRequestMatch={onPersonClick}
+            />
+          ))}
       </GoogleMap>
 
       {/* Custom map controls */}

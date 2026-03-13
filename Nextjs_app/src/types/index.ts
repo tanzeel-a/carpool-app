@@ -159,3 +159,119 @@ export interface AuthContextValue {
   signOut: () => Promise<void>;
   updateProfile: (data: Partial<User>) => Promise<void>;
 }
+
+/**
+ * Match Request for nearby people feature
+ */
+export interface MatchRequest {
+  id: string;
+  fromUserId: string;
+  fromUser: { displayName: string; photoURL: string; location: GeoPoint };
+  toUserId: string;
+  toUser: { displayName: string; photoURL: string };
+  status: 'pending' | 'accepted' | 'rejected' | 'expired';
+  message?: string;
+  createdAt: Timestamp;
+  expiresAt: Timestamp;
+}
+
+/**
+ * Persistent Chat between users
+ */
+export interface Chat {
+  id: string;
+  participants: string[];
+  participantDetails: Record<string, { displayName: string; photoURL: string }>;
+  lastMessage?: { text: string; senderId: string; timestamp: Timestamp };
+  createdAt: Timestamp;
+}
+
+/**
+ * Persistent Chat Message
+ */
+export interface PersistentChatMessage {
+  id: string;
+  chatId: string;
+  senderId: string;
+  senderName: string;
+  senderPhoto?: string;
+  text?: string;
+  location?: { lat: number; lng: number };
+  timestamp: Timestamp;
+  type: 'text' | 'location' | 'system';
+  read: boolean;
+}
+
+/**
+ * User Presence for nearby people discovery
+ */
+export interface UserPresence {
+  id: string;
+  uid: string;
+  displayName: string;
+  photoURL: string;
+  location: GeoPoint;
+  geohash: string;
+  lastUpdated: Timestamp;
+  isOnline: boolean;
+  isSearching: boolean;
+  broadcast?: {
+    message: string;
+    originAddress: string;
+    destinationAddress: string;
+    destination?: Location;
+  };
+}
+
+/**
+ * Broadcast Message for map annotations
+ */
+export interface Broadcast {
+  id: string;
+  userId: string;
+  user: { displayName: string; photoURL: string };
+  location: GeoPoint;
+  geohash: string;
+  origin: Location;
+  destination: Location;
+  createdAt: Timestamp;
+  expiresAt: Timestamp;
+  status: 'active' | 'expired' | 'cancelled';
+}
+
+/**
+ * Nearby Person for map display
+ */
+export interface NearbyPerson {
+  id: string;
+  uid: string;
+  displayName: string;
+  photoURL: string;
+  location: { lat: number; lng: number };
+  distance: number;
+  isOnline: boolean;
+  broadcast?: {
+    message: string;
+    originAddress: string;
+    destinationAddress: string;
+    destination?: Location;
+  };
+}
+
+/**
+ * Group Ride with multiple participants
+ */
+export interface GroupRide {
+  id: string;
+  hostId: string;
+  participants: {
+    uid: string;
+    displayName: string;
+    photoURL: string;
+    status: 'pending' | 'confirmed' | 'declined';
+  }[];
+  origin: Location;
+  destination: Location;
+  status: 'forming' | 'ready' | 'in_progress' | 'completed' | 'cancelled';
+  createdAt: Timestamp;
+}

@@ -1,0 +1,575 @@
+/**
+ * GroupRidePanel Styles
+ * Horizontal panel for multi-rider group rides
+ */
+
+/* Slide-up animation */
+@keyframes slideUp {
+  from {
+    transform: translateY(100%);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+/* ============================================
+   Main Panel
+   ============================================ */
+
+.panel {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background: #ffffff;
+  border-radius: 20px 20px 0 0;
+  padding: 16px 20px 24px;
+  box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.1);
+  z-index: 100;
+  animation: slideUp 0.3s ease;
+}
+
+.header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 12px;
+}
+
+.header h3 {
+  font-size: 16px;
+  font-weight: 600;
+  color: #11100e;
+  margin: 0;
+}
+
+.memberCount {
+  font-size: 12px;
+  color: #22c55e;
+  background: rgba(34, 197, 94, 0.1);
+  padding: 4px 10px;
+  border-radius: 12px;
+  font-weight: 500;
+}
+
+/* ============================================
+   Participants Scroll
+   ============================================ */
+
+.participantsScroll {
+  overflow-x: auto;
+  margin: 0 -20px;
+  padding: 0 20px;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
+}
+
+.participantsScroll::-webkit-scrollbar {
+  display: none;
+}
+
+.participants {
+  display: flex;
+  gap: 16px;
+  padding: 8px 0;
+}
+
+.participant {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  position: relative;
+  flex-shrink: 0;
+}
+
+.avatar {
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  border: 3px solid #e8e4de;
+  object-fit: cover;
+  transition: border-color 0.2s ease;
+}
+
+.avatarFallback {
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  border: 3px solid #e8e4de;
+  background: linear-gradient(135deg, #d4af37 0%, #aa8a2e 100%);
+  color: #ffffff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 20px;
+  font-weight: 600;
+}
+
+.participant.confirmed .avatar,
+.participant.confirmed .avatarFallback {
+  border-color: #22c55e;
+}
+
+.participant.pending .avatar,
+.participant.pending .avatarFallback {
+  border-color: #f59e0b;
+}
+
+.participant.declined .avatar,
+.participant.declined .avatarFallback {
+  border-color: #ef4444;
+  opacity: 0.5;
+}
+
+.participantName {
+  font-size: 11px;
+  color: #6e6660;
+  text-align: center;
+  max-width: 60px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.statusIndicator {
+  position: absolute;
+  top: -2px;
+  right: -2px;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background: #ffffff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.statusIndicator svg {
+  width: 12px;
+  height: 12px;
+}
+
+.participant.confirmed .statusIndicator svg {
+  color: #22c55e;
+}
+
+.participant.pending .statusIndicator svg {
+  color: #f59e0b;
+}
+
+.participant.declined .statusIndicator svg {
+  color: #ef4444;
+}
+
+/* Add button */
+.addBtn {
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  border: 2px dashed #d4af37;
+  background: rgba(212, 175, 55, 0.1);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #d4af37;
+  transition: all 0.2s ease;
+  flex-shrink: 0;
+}
+
+.addBtn:hover {
+  background: rgba(212, 175, 55, 0.2);
+  border-style: solid;
+}
+
+.addBtn svg {
+  width: 24px;
+  height: 24px;
+}
+
+/* ============================================
+   Destination
+   ============================================ */
+
+.destination {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 14px;
+  background: #f9f7f4;
+  border-radius: 10px;
+  margin: 12px 0;
+}
+
+.destination svg {
+  width: 18px;
+  height: 18px;
+  color: #d4af37;
+  flex-shrink: 0;
+}
+
+.destination span {
+  font-size: 13px;
+  color: #11100e;
+  font-weight: 500;
+}
+
+/* ============================================
+   Actions
+   ============================================ */
+
+.actions {
+  display: flex;
+  gap: 12px;
+}
+
+.cancelBtn,
+.leaveBtn {
+  flex: 1;
+  padding: 12px 16px;
+  border-radius: 12px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  background: #f9f7f4;
+  color: #6e6660;
+  border: 1px solid rgba(17, 16, 14, 0.1);
+}
+
+.cancelBtn:hover,
+.leaveBtn:hover {
+  background: #f3f0ec;
+  color: #ef4444;
+  border-color: #ef4444;
+}
+
+.startBtn {
+  flex: 2;
+  padding: 12px 16px;
+  border-radius: 12px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  background: linear-gradient(135deg, #22c55e 0%, #16a34a 100%);
+  color: #ffffff;
+  border: none;
+}
+
+.startBtn:hover:not(.disabled) {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 16px rgba(34, 197, 94, 0.3);
+}
+
+.startBtn.disabled {
+  background: #e8e4de;
+  color: #a09a94;
+  cursor: not-allowed;
+}
+
+/* ============================================
+   Invite Modal
+   ============================================ */
+
+.modalOverlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 300;
+  padding: 20px;
+  backdrop-filter: blur(4px);
+}
+
+.modal {
+  width: 100%;
+  max-width: 360px;
+  max-height: 70vh;
+  background: #ffffff;
+  border-radius: 20px;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  animation: slideUp 0.3s ease;
+}
+
+.modalHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px 20px;
+  border-bottom: 1px solid rgba(17, 16, 14, 0.08);
+}
+
+.modalHeader h3 {
+  font-size: 16px;
+  font-weight: 600;
+  color: #11100e;
+  margin: 0;
+}
+
+.closeBtn {
+  width: 32px;
+  height: 32px;
+  border: none;
+  background: rgba(17, 16, 14, 0.05);
+  border-radius: 50%;
+  font-size: 20px;
+  color: #6e6660;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.closeBtn:hover {
+  background: rgba(17, 16, 14, 0.1);
+}
+
+.inviteList {
+  padding: 12px;
+  overflow-y: auto;
+  flex: 1;
+}
+
+.emptyText {
+  text-align: center;
+  color: #6e6660;
+  font-size: 14px;
+  padding: 20px;
+}
+
+.inviteItem {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px;
+  border-radius: 12px;
+  transition: background 0.2s ease;
+}
+
+.inviteItem:hover {
+  background: #f9f7f4;
+}
+
+.inviteAvatar {
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  border: 2px solid #d4af37;
+  object-fit: cover;
+}
+
+.inviteAvatarFallback {
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #d4af37 0%, #aa8a2e 100%);
+  color: #ffffff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 16px;
+  font-weight: 600;
+}
+
+.inviteInfo {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.inviteName {
+  font-size: 14px;
+  font-weight: 500;
+  color: #11100e;
+}
+
+.inviteDistance {
+  font-size: 12px;
+  color: #6e6660;
+}
+
+.inviteBtn {
+  padding: 8px 16px;
+  background: linear-gradient(135deg, #d4af37 0%, #aa8a2e 100%);
+  color: #ffffff;
+  border: none;
+  border-radius: 8px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.inviteBtn:hover {
+  transform: scale(1.05);
+}
+
+/* Tablet adjustments */
+@media (max-width: 768px) {
+  .panel {
+    padding: 14px 16px 20px;
+    /* Safe area for notched phones */
+    padding-bottom: max(env(safe-area-inset-bottom), 20px);
+  }
+
+  .modal {
+    max-width: 340px;
+  }
+
+  .closeBtn {
+    width: 44px;
+    height: 44px;
+  }
+}
+
+/* Mobile adjustments */
+@media (max-width: 480px) {
+  .panel {
+    padding: 12px 12px 16px;
+    padding-bottom: max(env(safe-area-inset-bottom), 16px);
+    border-radius: 16px 16px 0 0;
+  }
+
+  .header h3 {
+    font-size: 14px;
+  }
+
+  .memberCount {
+    font-size: 11px;
+    padding: 3px 8px;
+  }
+
+  .participants {
+    gap: 12px;
+  }
+
+  .avatar,
+  .avatarFallback {
+    width: 48px;
+    height: 48px;
+  }
+
+  .avatarFallback {
+    font-size: 16px;
+  }
+
+  .participantName {
+    font-size: 10px;
+    max-width: 50px;
+  }
+
+  .addBtn {
+    width: 48px;
+    height: 48px;
+  }
+
+  .addBtn svg {
+    width: 20px;
+    height: 20px;
+  }
+
+  .destination {
+    padding: 8px 10px;
+    margin: 10px 0;
+  }
+
+  .destination span {
+    font-size: 12px;
+  }
+
+  .actions {
+    gap: 8px;
+  }
+
+  .cancelBtn,
+  .leaveBtn,
+  .startBtn {
+    padding: 12px 12px;
+    font-size: 13px;
+    min-height: 48px; /* Touch target */
+  }
+
+  /* Modal adjustments */
+  .modalOverlay {
+    padding: 12px;
+    padding-bottom: max(env(safe-area-inset-bottom), 12px);
+  }
+
+  .modal {
+    max-width: 100%;
+    max-height: 80vh;
+    border-radius: 16px;
+  }
+
+  .modalHeader {
+    padding: 12px 16px;
+  }
+
+  .closeBtn {
+    width: 44px;
+    height: 44px;
+  }
+
+  .inviteItem {
+    padding: 10px;
+  }
+
+  .inviteAvatar,
+  .inviteAvatarFallback {
+    width: 40px;
+    height: 40px;
+  }
+
+  .inviteBtn {
+    padding: 10px 14px;
+    min-height: 40px;
+  }
+}
+
+/* Extra small phones */
+@media (max-width: 360px) {
+  .panel {
+    padding: 10px 10px 14px;
+    padding-bottom: max(env(safe-area-inset-bottom), 14px);
+  }
+
+  .participants {
+    gap: 10px;
+  }
+
+  .avatar,
+  .avatarFallback {
+    width: 42px;
+    height: 42px;
+  }
+
+  .addBtn {
+    width: 42px;
+    height: 42px;
+  }
+
+  .participantName {
+    font-size: 9px;
+    max-width: 44px;
+  }
+
+  .actions {
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .startBtn {
+    flex: 1;
+  }
+}
