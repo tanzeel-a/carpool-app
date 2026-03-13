@@ -8,6 +8,8 @@
  */
 
 import { useEffect, useRef, useState } from 'react';
+import Lottie from 'lottie-react';
+import loadingDotsAnimation from '../../public/assets/Loading Dots In Yellow.json';
 import styles from './PageLoader.module.css';
 
 interface PageLoaderProps {
@@ -244,10 +246,12 @@ export default function PageLoader({ minDisplayTime = 800 }: PageLoaderProps) {
       <div className={styles.content}>
         <div className={styles.logo}>CARPOOL</div>
         <div className={styles.tagline}>Quiet Commutes</div>
-        <div className={styles.spinner}>
-          <div className={styles.spinnerRing} />
-          <div className={styles.spinnerRing} />
-          <div className={styles.spinnerRing} />
+        <div className={styles.lottieContainer}>
+          <Lottie
+            animationData={loadingDotsAnimation}
+            loop={true}
+            className={styles.lottieAnimation}
+          />
         </div>
       </div>
     </div>

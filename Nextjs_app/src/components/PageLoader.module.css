@@ -62,39 +62,15 @@
   text-transform: uppercase;
 }
 
-.spinner {
-  position: relative;
-  width: 60px;
-  height: 60px;
+.lottieContainer {
+  width: 120px;
+  height: 120px;
   margin-top: 24px;
 }
 
-.spinnerRing {
-  position: absolute;
-  inset: 0;
-  border: 2px solid transparent;
-  border-top-color: #d4af37;
-  border-radius: 50%;
-  animation: spin 1.2s linear infinite;
-}
-
-.spinnerRing:nth-child(2) {
-  inset: 6px;
-  border-top-color: rgba(212, 175, 55, 0.6);
-  animation-duration: 1.5s;
-  animation-direction: reverse;
-}
-
-.spinnerRing:nth-child(3) {
-  inset: 12px;
-  border-top-color: rgba(212, 175, 55, 0.3);
-  animation-duration: 2s;
-}
-
-@keyframes spin {
-  to {
-    transform: rotate(360deg);
-  }
+.lottieAnimation {
+  width: 100%;
+  height: 100%;
 }
 
 /* Responsive */
@@ -108,18 +84,10 @@
     font-size: 12px;
   }
 
-  .spinner {
-    width: 48px;
-    height: 48px;
+  .lottieContainer {
+    width: 100px;
+    height: 100px;
     margin-top: 20px;
-  }
-
-  .spinnerRing:nth-child(2) {
-    inset: 5px;
-  }
-
-  .spinnerRing:nth-child(3) {
-    inset: 10px;
   }
 }
 
@@ -127,10 +95,6 @@
 @media (prefers-reduced-motion: reduce) {
   .loader {
     transition: none;
-  }
-
-  .spinnerRing {
-    animation-duration: 3s;
   }
 
   .logo {
