@@ -299,7 +299,7 @@
   height: 20px;
 }
 
-/* Mobile adjustments */
+/* Tablet adjustments */
 @media (max-width: 768px) {
   .mapControls {
     right: 12px;
@@ -307,14 +307,14 @@
   }
 
   .controlBtn {
-    width: 40px;
-    height: 40px;
-    border-radius: 10px;
+    width: 48px;
+    height: 48px;
+    border-radius: 12px;
   }
 
   .controlBtn svg {
-    width: 18px;
-    height: 18px;
+    width: 20px;
+    height: 20px;
   }
 
   .markerLabel {
@@ -325,5 +325,70 @@
   .destinationLabel {
     font-size: 10px;
     max-width: 100px;
+  }
+}
+
+/* Mobile adjustments */
+@media (max-width: 480px) {
+  .mapControls {
+    right: 10px;
+    bottom: 160px;
+    gap: 6px;
+  }
+
+  .controlBtn {
+    width: 48px;
+    height: 48px;
+    border-radius: 10px;
+  }
+
+  .controlBtn svg {
+    width: 20px;
+    height: 20px;
+  }
+
+  .markerLabel {
+    font-size: 10px;
+    padding: 3px 6px;
+    border-radius: 8px;
+  }
+
+  .userMarker .markerLabel {
+    font-size: 11px;
+    padding: 4px 8px;
+  }
+
+  .destinationLabel {
+    font-size: 10px;
+    max-width: 90px;
+    padding: 3px 8px;
+  }
+
+  .destinationPin {
+    width: 32px;
+    height: 32px;
+  }
+}
+
+/* Extra small phones */
+@media (max-width: 360px) {
+  .mapControls {
+    right: 8px;
+    bottom: 150px;
+    gap: 4px;
+  }
+
+  .controlBtn {
+    width: 44px;
+    height: 44px;
+  }
+}
+
+/* Landscape mode - adjust control position */
+@media (max-height: 500px) and (orientation: landscape) {
+  .mapControls {
+    bottom: 80px;
+    right: 8px;
+    flex-direction: row;
   }
 }

@@ -162,6 +162,8 @@ export function useUserPresence(options: UseUserPresenceOptions = {}) {
       return;
     }
 
+    let isFirstUpdate = true;
+
     watchIdRef.current = navigator.geolocation.watchPosition(
       (position) => {
         const newLocation = {
@@ -169,7 +171,9 @@ export function useUserPresence(options: UseUserPresenceOptions = {}) {
           lng: position.coords.longitude,
         };
         setLocation(newLocation);
-        updatePresence(newLocation);
+        // Force update on first location to ensure presence is created
+        updatePresence(newLocation, isFirstUpdate);
+        isFirstUpdate = false;
       },
       (err) => {
         console.error('Geolocation error:', err);

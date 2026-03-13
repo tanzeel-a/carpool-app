@@ -330,3 +330,182 @@
     transform: translateX(0);
   }
 }
+
+/* Tablet adjustments */
+@media (max-width: 768px) {
+  .modal {
+    max-width: 340px;
+    padding: 20px;
+  }
+
+  .carSvg {
+    width: 120px;
+    height: 60px;
+  }
+
+  .content h2 {
+    font-size: 22px;
+  }
+
+  .content p {
+    font-size: 15px;
+  }
+}
+
+/* Mobile adjustments */
+@media (max-width: 480px) {
+  .overlay {
+    padding: 16px;
+    /* Safe area for notched phones */
+    padding-bottom: max(env(safe-area-inset-bottom), 16px);
+  }
+
+  .modal {
+    width: 100%;
+    max-width: none;
+    margin: 0 8px;
+    padding: 16px;
+    border-radius: 20px;
+  }
+
+  .carContainer {
+    height: 80px;
+    margin-bottom: 12px;
+  }
+
+  .carSvg {
+    width: 100px;
+    height: 50px;
+  }
+
+  .road {
+    bottom: 60px;
+    height: 32px;
+  }
+
+  .roadLine {
+    width: 30px;
+    height: 3px;
+  }
+
+  .scenery {
+    bottom: 92px;
+    height: 50px;
+  }
+
+  .treeTop {
+    border-left-width: 12px;
+    border-right-width: 12px;
+    border-bottom-width: 24px;
+  }
+
+  .treeTrunk {
+    width: 6px;
+    height: 12px;
+  }
+
+  .content {
+    padding: 16px 14px;
+    margin-top: 12px;
+    border-radius: 14px;
+  }
+
+  .content h2 {
+    font-size: 20px;
+    margin-bottom: 6px;
+  }
+
+  .content p {
+    font-size: 14px;
+    margin-bottom: 12px;
+  }
+
+  .sparkles {
+    font-size: 20px;
+    gap: 10px;
+  }
+
+  .hint {
+    font-size: 11px;
+    bottom: 12px;
+  }
+
+  .modal::before {
+    width: 32px;
+    height: 32px;
+    top: 14px;
+    right: 20px;
+  }
+
+  .modal::after {
+    font-size: 16px;
+    letter-spacing: 16px;
+    top: 20px;
+    left: 14px;
+  }
+}
+
+/* Extra small phones */
+@media (max-width: 360px) {
+  .modal {
+    padding: 12px;
+  }
+
+  .carContainer {
+    height: 70px;
+  }
+
+  .carSvg {
+    width: 90px;
+    height: 45px;
+  }
+
+  .content h2 {
+    font-size: 18px;
+  }
+
+  .content p {
+    font-size: 13px;
+  }
+
+  .sparkles {
+    font-size: 18px;
+  }
+}
+
+/* Landscape mode */
+@media (max-height: 500px) and (orientation: landscape) {
+  .modal {
+    max-height: 90vh;
+    overflow-y: auto;
+    flex-direction: row;
+    flex-wrap: wrap;
+  }
+
+  .carContainer {
+    height: 60px;
+    width: 40%;
+    margin-bottom: 0;
+  }
+
+  .carSvg {
+    width: 80px;
+    height: 40px;
+  }
+
+  .road {
+    bottom: auto;
+    top: 50%;
+    height: 24px;
+  }
+
+  .content {
+    width: 55%;
+    margin-top: 0;
+    margin-left: auto;
+  }
+
+  .scenery {
+    display: none;
+  }
+}

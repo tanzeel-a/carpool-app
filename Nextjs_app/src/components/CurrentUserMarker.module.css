@@ -1,0 +1,252 @@
+/**
+ * CurrentUserMarker Styles
+ * Google Maps-style teardrop pin for the current user
+ */
+
+/* Marker drop-in animation */
+@keyframes markerDrop {
+  0% {
+    transform: translate(-50%, -100%) translateY(-50px) scale(0);
+    opacity: 0;
+  }
+  60% {
+    transform: translate(-50%, -100%) translateY(10px) scale(1.1);
+  }
+  100% {
+    transform: translate(-50%, -100%) translateY(0) scale(1);
+    opacity: 1;
+  }
+}
+
+/* Pulse ring animation */
+@keyframes pulseRing {
+  0% {
+    transform: translate(-50%, -50%) scale(0.5);
+    opacity: 0.8;
+  }
+  100% {
+    transform: translate(-50%, -50%) scale(2.5);
+    opacity: 0;
+  }
+}
+
+/* Gentle hover animation */
+@keyframes gentleFloat {
+  0%, 100% {
+    transform: translate(-50%, -100%) translateY(0);
+  }
+  50% {
+    transform: translate(-50%, -100%) translateY(-4px);
+  }
+}
+
+/* Glow pulse */
+@keyframes glowPulse {
+  0%, 100% {
+    box-shadow: 0 0 8px rgba(212, 175, 55, 0.6);
+  }
+  50% {
+    box-shadow: 0 0 16px rgba(212, 175, 55, 0.9);
+  }
+}
+
+/* Container */
+.markerContainer {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  transform: translate(-50%, -100%);
+  pointer-events: none;
+  animation: markerDrop 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards,
+             gentleFloat 3s ease-in-out 1s infinite;
+  z-index: 100;
+}
+
+/* Pulse rings */
+.pulseRing {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 100px;
+  height: 100px;
+  border-radius: 50%;
+  border: 3px solid #d4af37;
+  opacity: 0;
+  animation: pulseRing 2s ease-out infinite;
+  pointer-events: none;
+  z-index: -1;
+}
+
+/* Teardrop pin container */
+.teardropPin {
+  position: relative;
+  width: 56px;
+  height: 72px;
+  filter: drop-shadow(0 6px 12px rgba(0, 0, 0, 0.25));
+}
+
+.teardropSvg {
+  width: 100%;
+  height: 100%;
+}
+
+/* Photo wrapper - positioned inside the teardrop */
+.photoWrapper {
+  position: absolute;
+  top: 6px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  overflow: hidden;
+  background: linear-gradient(135deg, #d4af37 0%, #aa8a2e 100%);
+  border: 2px solid #d4af37;
+  animation: glowPulse 2s ease-in-out infinite;
+}
+
+.photo {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.photoFallback {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 18px;
+  font-weight: 600;
+  color: #ffffff;
+  background: linear-gradient(135deg, #d4af37 0%, #aa8a2e 100%);
+}
+
+.hidden {
+  display: none;
+}
+
+/* Golden glow indicator at bottom of teardrop */
+.glowIndicator {
+  position: absolute;
+  bottom: 8px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #d4af37;
+  box-shadow: 0 0 8px #d4af37;
+}
+
+/* Name label */
+.nameLabel {
+  position: absolute;
+  bottom: -24px;
+  left: 50%;
+  transform: translateX(-50%);
+  white-space: nowrap;
+}
+
+.name {
+  padding: 4px 12px;
+  background: linear-gradient(135deg, #d4af37 0%, #aa8a2e 100%);
+  color: #ffffff;
+  font-size: 12px;
+  font-weight: 700;
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(212, 175, 55, 0.4);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+/* Tablet adjustments */
+@media (max-width: 768px) {
+  .teardropPin {
+    width: 50px;
+    height: 65px;
+  }
+
+  .photoWrapper {
+    width: 36px;
+    height: 36px;
+    top: 5px;
+  }
+
+  .photoFallback {
+    font-size: 16px;
+  }
+
+  .pulseRing {
+    width: 80px;
+    height: 80px;
+  }
+
+  .name {
+    font-size: 11px;
+    padding: 3px 10px;
+  }
+}
+
+/* Mobile adjustments */
+@media (max-width: 480px) {
+  .teardropPin {
+    width: 46px;
+    height: 60px;
+  }
+
+  .photoWrapper {
+    width: 32px;
+    height: 32px;
+    top: 5px;
+  }
+
+  .photoFallback {
+    font-size: 14px;
+  }
+
+  .glowIndicator {
+    width: 6px;
+    height: 6px;
+    bottom: 6px;
+  }
+
+  .pulseRing {
+    width: 70px;
+    height: 70px;
+  }
+
+  .nameLabel {
+    bottom: -20px;
+  }
+
+  .name {
+    font-size: 10px;
+    padding: 3px 8px;
+  }
+}
+
+/* Extra small phones */
+@media (max-width: 360px) {
+  .teardropPin {
+    width: 42px;
+    height: 54px;
+  }
+
+  .photoWrapper {
+    width: 28px;
+    height: 28px;
+    top: 4px;
+  }
+
+  .photoFallback {
+    font-size: 12px;
+  }
+
+  .pulseRing {
+    width: 60px;
+    height: 60px;
+  }
+}

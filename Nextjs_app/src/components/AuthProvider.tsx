@@ -20,7 +20,7 @@ import {
 } from 'firebase/auth';
 import { doc, setDoc, getDoc, serverTimestamp } from 'firebase/firestore';
 import { auth, db, googleProvider } from '@/lib/firebase';
-import { User, AuthContextValue } from '@/types';
+import type { User, AuthContextValue } from '@/types';
 
 // Create context with default values
 const AuthContext = createContext<AuthContextValue>({
@@ -28,6 +28,7 @@ const AuthContext = createContext<AuthContextValue>({
   loading: true,
   signInWithGoogle: async () => {},
   signOut: async () => {},
+  updateProfile: async () => {},
 });
 
 // Hook to use auth context
@@ -131,11 +132,29 @@ export function AuthProvider({ children }: AuthProviderProps) {
     }
   };
 
+  // Update user profile
+  const updateProfile = async (data: Partial<User>) => {
+    if (!user || !db) {
+      console.error('User not logged in or Firebase not initialized');
+      return;
+    }
+    try {
+      const userRef = doc(db, 'users', user.uid);
+      await setDoc(userRef, data, { merge: true });
+      // Update local state
+      setUser(prev => prev ? { ...prev, ...data } : null);
+    } catch (error) {
+      console.error('Error updating profile:', error);
+      throw error;
+    }
+  };
+
   const value: AuthContextValue = {
     user,
     loading,
     signInWithGoogle,
     signOut,
+    updateProfile,
   };
 
   return (

@@ -61,7 +61,7 @@ export default function DashboardPage() {
   const [error, setError] = useState<string | null>(null);
   const [demoRideId, setDemoRideId] = useState<string | null>(null);
   const [isDemoMode, setIsDemoMode] = useState(false);
-  const [searchRadius, setSearchRadius] = useState(100); // in meters
+  const [searchRadius, setSearchRadius] = useState(500); // in meters (500m default for nearby people)
 
   // Chat and matched rider state
   const [isChatOpen, setIsChatOpen] = useState(false);
@@ -134,28 +134,72 @@ export default function DashboardPage() {
   const currentIncomingRequest = incomingRequests[0] || null;
 
   // ============================================
-  // Nearby People Handlers
+  // Nearby People & Group Ride Handlers
   // ============================================
 
-  // Handle clicking on a nearby person marker
+  // Handle clicking on a nearby person marker - adds them to group ride
   const handlePersonClick = useCallback((person: NearbyPerson) => {
-    setSelectedPerson(person);
-  }, []);
+    if (!user || !destination) return;
 
-  // Send match request to selected person
-  const handleSendMatchRequest = useCallback(async (message: string) => {
-    if (!selectedPerson) return;
-
-    setMatchRequestLoading(true);
-    const requestId = await sendRequest(selectedPerson, message);
-    setMatchRequestLoading(false);
-
-    if (requestId) {
-      setSelectedPerson(null);
+    // Check if person is already in the group
+    if (groupRide?.participants.some(p => p.uid === person.uid)) {
+      return; // Already in group
     }
-  }, [selectedPerson, sendRequest]);
 
-  // Accept incoming match request
+    if (!groupRide) {
+      // Create new group ride with user as host and add the clicked person
+      const newGroupRide: GroupRide = {
+        id: `group-${Date.now()}`,
+        hostId: user.uid,
+        participants: [
+          {
+            uid: user.uid,
+            displayName: user.displayName,
+            photoURL: user.photoURL,
+            status: 'confirmed',
+          },
+          {
+            uid: person.uid,
+            displayName: person.displayName,
+            photoURL: person.photoURL,
+            status: 'confirmed', // Auto-confirm for demo
+          },
+        ],
+        origin: {
+          lat: userLocation?.lat || 0,
+          lng: userLocation?.lng || 0,
+          address: 'Current Location',
+        },
+        destination,
+        status: 'forming',
+        createdAt: Timestamp.now(),
+      };
+      setGroupRide(newGroupRide);
+    } else {
+      // Add to existing group (max 4 people)
+      if (groupRide.participants.length >= 4) {
+        setError('Group is full (max 4 people)');
+        return;
+      }
+      setGroupRide({
+        ...groupRide,
+        participants: [
+          ...groupRide.participants,
+          {
+            uid: person.uid,
+            displayName: person.displayName,
+            photoURL: person.photoURL,
+            status: 'confirmed', // Auto-confirm for demo
+          },
+        ],
+      });
+    }
+
+    // Clear any selected person
+    setSelectedPerson(null);
+  }, [user, destination, groupRide, userLocation]);
+
+  // Accept incoming match request (when someone requests to join)
   const handleAcceptMatchRequest = useCallback(async () => {
     if (!currentIncomingRequest) return;
 
@@ -179,11 +223,6 @@ export default function DashboardPage() {
     if (!currentIncomingRequest) return;
     await rejectRequest(currentIncomingRequest.id);
   }, [currentIncomingRequest, rejectRequest]);
-
-  // Close match request modal (cancel send mode)
-  const handleCancelSendRequest = useCallback(() => {
-    setSelectedPerson(null);
-  }, []);
 
   // Open a chat from the bubbles
   const handleChatBubbleClick = useCallback((chatId: string) => {
@@ -743,6 +782,7 @@ export default function DashboardPage() {
           matchedRiderLocation={matchedRider?.location}
           searchRadius={searchRadius}
           focusLocation={focusLocation}
+          currentUser={user ? { photoURL: user.photoURL, displayName: user.displayName } : null}
           nearbyPeople={nearbyPeople}
           selectedPersonId={selectedPerson?.id}
           onPersonClick={handlePersonClick}
@@ -752,6 +792,15 @@ export default function DashboardPage() {
         {error && (
           <div className={styles.errorBanner}>
             {error}
+          </div>
+        )}
+
+        {/* Nearby People Indicator */}
+        {nearbyPeople.length > 0 && !groupRide && (
+          <div className={styles.nearbyIndicator}>
+            <span className={styles.nearbyDot} />
+            {nearbyPeople.length} {nearbyPeople.length === 1 ? 'person' : 'people'} nearby
+            <span className={styles.nearbyHint}>Tap markers to add to group</span>
           </div>
         )}
 
@@ -850,14 +899,6 @@ export default function DashboardPage() {
       {/* ============================================
           Nearby People Feature Components
           ============================================ */}
-
-      {/* Match Request Modal - Send mode (clicking on a person) */}
-      <MatchRequestModal
-        targetPerson={selectedPerson}
-        onSendRequest={handleSendMatchRequest}
-        onCancelSend={handleCancelSendRequest}
-        loading={matchRequestLoading}
-      />
 
       {/* Match Request Modal - Receive mode (incoming request) */}
       <MatchRequestModal

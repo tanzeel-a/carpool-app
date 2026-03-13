@@ -110,10 +110,18 @@ export function useNearbyPeople(options: UseNearbyPeopleOptions) {
               );
 
               if (distance <= radius) {
-                // Check if presence is stale (more than 2 minutes old)
-                const lastUpdated = docData.lastUpdated?.toDate?.() || new Date();
-                const staleThreshold = 2 * 60 * 1000; // 2 minutes
-                const isStale = Date.now() - lastUpdated.getTime() > staleThreshold;
+                // Check if presence is stale (more than 10 minutes old)
+                let lastUpdatedTime = Date.now();
+                if (docData.lastUpdated) {
+                  // Handle both Timestamp objects and already-converted dates
+                  if (typeof docData.lastUpdated.toDate === 'function') {
+                    lastUpdatedTime = docData.lastUpdated.toDate().getTime();
+                  } else if (docData.lastUpdated instanceof Date) {
+                    lastUpdatedTime = docData.lastUpdated.getTime();
+                  }
+                }
+                const staleThreshold = 10 * 60 * 1000; // 10 minutes
+                const isStale = Date.now() - lastUpdatedTime > staleThreshold;
 
                 if (!isStale) {
                   const person: NearbyPerson = {

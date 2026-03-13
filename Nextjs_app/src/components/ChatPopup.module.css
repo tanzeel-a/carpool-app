@@ -280,19 +280,165 @@
   transform: scale(1.05);
 }
 
-/* Responsive */
-@media (max-width: 480px) {
+/* Tablet adjustments */
+@media (max-width: 768px) {
   .popup {
-    max-height: 80vh;
-    border-radius: 20px 20px 0 0;
+    max-width: 360px;
   }
 
+  .closeBtn {
+    width: 44px;
+    height: 44px;
+  }
+
+  .locationBtn,
+  .sendBtn {
+    width: 44px;
+    height: 44px;
+  }
+}
+
+/* Mobile adjustments */
+@media (max-width: 480px) {
   .overlay {
     padding: 0;
     align-items: flex-end;
   }
 
+  .popup {
+    max-width: 100%;
+    max-height: 85vh;
+    border-radius: 20px 20px 0 0;
+  }
+
+  .header {
+    padding: 14px 12px;
+    /* Safe area for notched phones */
+    padding-top: max(env(safe-area-inset-top), 14px);
+  }
+
+  .closeBtn {
+    width: 44px;
+    height: 44px;
+  }
+
+  .avatar,
+  .avatarPlaceholder {
+    width: 40px;
+    height: 40px;
+  }
+
+  .avatarPlaceholder {
+    font-size: 16px;
+  }
+
+  .riderInfo h3 {
+    font-size: 14px;
+  }
+
   .messages {
-    max-height: 40vh;
+    max-height: 50vh;
+    padding: 12px;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .message {
+    max-width: 85%;
+    padding: 10px 12px;
+  }
+
+  .message p {
+    font-size: 14px;
+  }
+
+  .inputArea {
+    padding: 10px 12px;
+    /* Safe area for bottom */
+    padding-bottom: max(env(safe-area-inset-bottom), 10px);
+    gap: 6px;
+  }
+
+  .input {
+    padding: 12px 14px;
+    font-size: 16px; /* Prevents zoom on iOS */
+  }
+
+  .locationBtn,
+  .sendBtn {
+    width: 44px;
+    height: 44px;
+    flex-shrink: 0;
+  }
+
+  .locationBtn svg,
+  .sendBtn svg {
+    width: 18px;
+    height: 18px;
+  }
+}
+
+/* Extra small phones */
+@media (max-width: 360px) {
+  .header {
+    padding: 12px 10px;
+  }
+
+  .riderInfo {
+    gap: 8px;
+  }
+
+  .avatar,
+  .avatarPlaceholder {
+    width: 36px;
+    height: 36px;
+  }
+
+  .riderInfo h3 {
+    font-size: 13px;
+  }
+
+  .proximity {
+    font-size: 11px;
+  }
+
+  .messages {
+    padding: 10px;
+  }
+
+  .message p {
+    font-size: 13px;
+  }
+
+  .inputArea {
+    padding: 8px 10px;
+    gap: 4px;
+  }
+
+  .input {
+    padding: 10px 12px;
+  }
+
+  .locationBtn,
+  .sendBtn {
+    width: 40px;
+    height: 40px;
+  }
+}
+
+/* Landscape mode */
+@media (max-height: 500px) and (orientation: landscape) {
+  .overlay {
+    align-items: center;
+    padding: 16px;
+  }
+
+  .popup {
+    max-height: 90vh;
+    border-radius: 16px;
+  }
+
+  .messages {
+    max-height: calc(90vh - 120px);
+    min-height: 100px;
   }
 }

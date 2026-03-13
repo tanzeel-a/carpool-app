@@ -14,6 +14,7 @@ import { useCallback, useState, useMemo, useEffect } from 'react';
 import { GoogleMap, useJsApiLoader, Circle, OverlayView } from '@react-google-maps/api';
 import { Ride, Location, NearbyPerson } from '@/types';
 import ProfileImageMarker from './ProfileImageMarker';
+import CurrentUserMarker from './CurrentUserMarker';
 import BroadcastBubble from './BroadcastBubble';
 import styles from './MapView.module.css';
 
@@ -28,6 +29,11 @@ interface MapViewProps {
   matchedRiderLocation?: { lat: number; lng: number } | null;
   searchRadius?: number; // in meters
   focusLocation?: { lat: number; lng: number; timestamp: number } | null; // Pan to this location when set
+  // Current user info for profile marker
+  currentUser?: {
+    photoURL?: string;
+    displayName?: string;
+  } | null;
   // Nearby people feature
   nearbyPeople?: NearbyPerson[];
   selectedPersonId?: string | null;
@@ -233,6 +239,7 @@ export default function MapView({
   matchedRiderLocation,
   searchRadius = 100,
   focusLocation,
+  currentUser,
   nearbyPeople = [],
   selectedPersonId,
   onPersonClick,
@@ -380,14 +387,12 @@ export default function MapView({
           />
         )}
 
-        {/* User location marker */}
+        {/* User location marker with profile photo */}
         {userLocation && (
-          <LabelMarker
+          <CurrentUserMarker
             position={userLocation}
-            label="You"
-            color="#d4af37"
-            isUser={true}
-            pulse={true}
+            photoURL={currentUser?.photoURL}
+            displayName={currentUser?.displayName}
           />
         )}
 
