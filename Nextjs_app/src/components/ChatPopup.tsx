@@ -32,6 +32,8 @@ interface ChatPopupProps {
   theirLocation: { lat: number; lng: number } | null;
   onLocationShare: () => void;
   onViewLocation: (location: { lat: number; lng: number }, isMe: boolean) => void;
+  /** Start minimized (default: false) */
+  initiallyMinimized?: boolean;
 }
 
 // Calculate distance between two points in meters
@@ -58,11 +60,14 @@ export default function ChatPopup({
   theirLocation,
   onLocationShare,
   onViewLocation,
+  initiallyMinimized = false,
 }: ChatPopupProps) {
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [inputText, setInputText] = useState('');
   const [distance, setDistance] = useState<number | null>(null);
   const [prevDistance, setPrevDistance] = useState<number | null>(null);
+  const [isMinimized, setIsMinimized] = useState(initiallyMinimized);
+  const [unreadCount, setUnreadCount] = useState(0);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const audioRef = useRef<HTMLAudioElement | null>(null);
 
@@ -151,6 +156,10 @@ export default function ChatPopup({
         timestamp: new Date(),
       };
       setMessages(prev => [...prev, reply]);
+      // Increment unread count if minimized
+      if (isMinimized) {
+        setUnreadCount(prev => prev + 1);
+      }
     }, 1000 + Math.random() * 2000);
   };
 
@@ -200,16 +209,61 @@ export default function ChatPopup({
     );
   };
 
+  // Handle expanding from minimized state
+  const handleExpand = () => {
+    setIsMinimized(false);
+    setUnreadCount(0);
+  };
+
+  // Handle minimize
+  const handleMinimize = () => {
+    setIsMinimized(true);
+  };
+
   if (!isOpen) return null;
+
+  // Minimized bubble view
+  if (isMinimized) {
+    return (
+      <button
+        className={styles.minimizedBubble}
+        onClick={handleExpand}
+        aria-label={`Open chat with ${matchedRider.displayName}`}
+      >
+        {matchedRider.photoURL ? (
+          <img
+            src={matchedRider.photoURL}
+            alt={matchedRider.displayName}
+            className={styles.bubblePhoto}
+            referrerPolicy="no-referrer"
+          />
+        ) : (
+          <div className={styles.bubblePhotoFallback}>
+            {matchedRider.displayName.charAt(0)}
+          </div>
+        )}
+        {unreadCount > 0 && (
+          <span className={styles.unreadBadge}>
+            {unreadCount > 9 ? '9+' : unreadCount}
+          </span>
+        )}
+      </button>
+    );
+  }
 
   return (
     <div className={styles.overlay}>
       <div className={styles.popup}>
         {/* Header */}
         <div className={styles.header}>
+          <button onClick={handleMinimize} className={styles.minimizeBtn} aria-label="Minimize chat">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+              <path d="M19 9l-7 7-7-7" />
+            </svg>
+          </button>
           <div className={styles.riderInfo}>
             {matchedRider.photoURL ? (
-              <img src={matchedRider.photoURL} alt="" className={styles.avatar} />
+              <img src={matchedRider.photoURL} alt="" className={styles.avatar} referrerPolicy="no-referrer" />
             ) : (
               <div className={styles.avatarPlaceholder}>
                 {matchedRider.displayName.charAt(0)}
@@ -220,7 +274,7 @@ export default function ChatPopup({
               {getDistanceText()}
             </div>
           </div>
-          <button onClick={onClose} className={styles.closeBtn}>×</button>
+          <button onClick={onClose} className={styles.closeBtn} aria-label="Close chat">×</button>
         </div>
 
         {/* Messages */}
