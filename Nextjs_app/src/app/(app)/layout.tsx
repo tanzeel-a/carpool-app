@@ -9,7 +9,9 @@
 
 import { useEffect } from 'react';
 import { useRouter } from 'next/navigation';
+import Lottie from 'lottie-react';
 import { useAuth } from '@/components/AuthProvider';
+import loadingDotsAnimation from '../../../public/assets/Loading Dots In Yellow.json';
 import styles from './layout.module.css';
 
 export default function AppLayout({
@@ -30,8 +32,11 @@ export default function AppLayout({
   if (loading) {
     return (
       <div className={styles.loadingContainer}>
-        <div className={styles.spinner} />
-        <p>Loading...</p>
+        <Lottie
+          animationData={loadingDotsAnimation}
+          loop={true}
+          className={styles.lottieAnimation}
+        />
       </div>
     );
   }
