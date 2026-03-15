@@ -119,67 +119,48 @@ export default function DashboardPage() {
   // Nearby People & Group Ride Handlers
   // ============================================
 
-  // Handle clicking on a nearby person marker - adds them to group ride
-  const handlePersonClick = useCallback((person: NearbyPerson) => {
-    if (!user || !destination) return;
+  // Handle clicking on a nearby person marker - send match request
+  const handlePersonClick = useCallback(async (person: NearbyPerson) => {
+    if (!user) return;
 
-    // Check if person is already in the group
-    if (groupRide?.participants.some(p => p.uid === person.uid)) {
-      return; // Already in group
+    // Check if we already have a pending request to this person
+    const existingRequest = outgoingRequests.find(r => r.toUserId === person.uid);
+    if (existingRequest) {
+      console.log('[Dashboard] Already have pending request to:', person.displayName);
+      return;
     }
 
-    if (!groupRide) {
-      // Create new group ride with user as host and add the clicked person
-      const newGroupRide: GroupRide = {
-        id: `group-${Date.now()}`,
-        hostId: user.uid,
-        participants: [
-          {
-            uid: user.uid,
-            displayName: user.displayName,
-            photoURL: user.photoURL,
-            status: 'confirmed',
-          },
-          {
-            uid: person.uid,
-            displayName: person.displayName,
-            photoURL: person.photoURL,
-            status: 'confirmed', // Auto-confirm for demo
-          },
-        ],
-        origin: {
-          lat: userLocation?.lat || 0,
-          lng: userLocation?.lng || 0,
-          address: 'Current Location',
-        },
-        destination,
-        status: 'forming',
-        createdAt: Timestamp.now(),
-      };
-      setGroupRide(newGroupRide);
-    } else {
-      // Add to existing group (max 4 people)
-      if (groupRide.participants.length >= 4) {
-        setError('Group is full (max 4 people)');
-        return;
-      }
-      setGroupRide({
-        ...groupRide,
-        participants: [
-          ...groupRide.participants,
-          {
-            uid: person.uid,
-            displayName: person.displayName,
-            photoURL: person.photoURL,
-            status: 'confirmed', // Auto-confirm for demo
-          },
-        ],
+    // Check if we already have a chat with this person
+    const existingChat = chats.find(c => c.participants.includes(person.uid));
+    if (existingChat) {
+      // Open existing chat instead
+      const otherParticipant = existingChat.participantDetails[person.uid];
+      setActiveChatId(existingChat.id);
+      setActiveChatParticipant({
+        uid: person.uid,
+        displayName: otherParticipant.displayName,
+        photoURL: otherParticipant.photoURL,
       });
+      return;
     }
 
-    // Clear any selected person
-    setSelectedPerson(null);
-  }, [user, destination, groupRide, userLocation]);
+    // Send match request to the person
+    console.log('[Dashboard] Sending match request to:', person.displayName);
+    setMatchRequestLoading(true);
+
+    const requestId = await sendRequest(person, `Hi! Want to share a ride?`);
+
+    setMatchRequestLoading(false);
+
+    if (requestId) {
+      console.log('[Dashboard] Match request sent:', requestId);
+      // Show feedback that request was sent
+      setSelectedPerson(person);
+      setTimeout(() => setSelectedPerson(null), 3000);
+    } else {
+      setError('Failed to send request');
+    }
+  }, [user, outgoingRequests, chats, sendRequest]);
 
   // Accept incoming match request (when someone requests to join)
   const handleAcceptMatchRequest = useCallback(async () => {
@@ -369,43 +350,6 @@ export default function DashboardPage() {
     return () => unsubscribes.forEach((unsub) => unsub());
   }, [userLocation, currentRide, user?.uid, searchRadius]);
 
-  // Create ride request
-  const handleFindRide = useCallback(async () => {
-    if (!userLocation || !user || !destination || !db) {
-      setError('Please set a destination first');
-      return;
-    }
-
-    setIsSearching(true);
-    setError(null);
-
-    try {
-      const geohash = geohashForLocation([userLocation.lat, userLocation.lng]);
-      const now = new Date();
-      const expiresAt = new Date(now.getTime() + RIDE_EXPIRY_MINUTES * 60 * 1000);
-
-      const rideData = {
-        uid: user.uid,
-        displayName: user.displayName,
-        photoURL: user.photoURL,
-        origin: new GeoPoint(userLocation.lat, userLocation.lng),
-        originAddress: 'Current Location',
-        destination,
-        geohash,
-        status: 'searching',
-        createdAt: Timestamp.fromDate(now),
-        expiresAt: Timestamp.fromDate(expiresAt),
-      };
-
-      const docRef = await addDoc(collection(db, 'rides'), rideData);
-      setCurrentRide({ id: docRef.id, ...rideData } as Ride);
-    } catch (err) {
-      console.error('Error creating ride:', err);
-      setError('Failed to create ride request. Please try again.');
-      setIsSearching(false);
-    }
-  }, [userLocation, user, destination]);
-
   // Cancel ride request
   const handleCancelRide = useCallback(async () => {
     if (!currentRide?.id || !db) return;
@@ -591,17 +535,6 @@ export default function DashboardPage() {
             {nearbyPeople.length} {nearbyPeople.length === 1 ? 'person' : 'people'} nearby
             <span className={styles.nearbyHint}>Tap markers to add to group</span>
           </div>
-        )}
-
-        {/* Find Ride Button */}
-        {!isSearching && destination && (
-          <button
-            className={styles.findRideBtn}
-            onClick={handleFindRide}
-            disabled={!userLocation}
-          >
-            Find Ride to {destination.address}
-          </button>
         )}
 
         {/* Searching State */}

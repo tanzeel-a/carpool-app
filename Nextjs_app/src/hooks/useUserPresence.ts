@@ -209,21 +209,55 @@ export function useUserPresence(options: UseUserPresenceOptions = {}) {
     };
   }, [enabled, user, updatePresence]);
 
-  // Go offline when window closes (not on tab switch or unmount)
+  // Go offline when window closes or tab is hidden for too long
   useEffect(() => {
-    if (!user) return;
+    if (!user || !db || !presenceDocId) return;
+
+    let hiddenTimeout: NodeJS.Timeout | null = null;
 
     const handleBeforeUnload = () => {
-      // Only go offline when actually closing the window/tab
+      // Sync call - try to go offline
       goOffline();
     };
 
+    const handlePageHide = () => {
+      // pagehide is more reliable on mobile than beforeunload
+      goOffline();
+    };
+
+    const handleVisibilityChange = () => {
+      if (document.hidden) {
+        // Tab is hidden - set timeout to go offline after 30 seconds
+        hiddenTimeout = setTimeout(() => {
+          console.log('[Presence] Tab hidden for 30s, going offline');
+          goOffline();
+        }, 30000);
+      } else {
+        // Tab is visible again - cancel timeout and come back online
+        if (hiddenTimeout) {
+          clearTimeout(hiddenTimeout);
+          hiddenTimeout = null;
+        }
+        // Force update presence to come back online
+        if (location) {
+          updatePresence(location, true);
+        }
+      }
+    };
+
     window.addEventListener('beforeunload', handleBeforeUnload);
+    window.addEventListener('pagehide', handlePageHide);
+    document.addEventListener('visibilitychange', handleVisibilityChange);
 
     return () => {
       window.removeEventListener('beforeunload', handleBeforeUnload);
+      window.removeEventListener('pagehide', handlePageHide);
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
+      if (hiddenTimeout) {
+        clearTimeout(hiddenTimeout);
+      }
     };
-  }, [user, goOffline]);
+  }, [user, presenceDocId, goOffline, location, updatePresence]);
 
   return {
     location,

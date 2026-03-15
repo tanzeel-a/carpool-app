@@ -257,40 +257,6 @@
   background: #2a2826;
 }
 
-/* Find Ride Button */
-.findRideBtn {
-  position: absolute;
-  bottom: 32px;
-  left: 50%;
-  transform: translateX(-50%);
-  z-index: 10;
-  padding: 16px 32px;
-  border: none;
-  border-radius: 999px;
-  background: linear-gradient(135deg, #d4af37 0%, #aa8a2e 100%);
-  color: #0a0a0a;
-  font-size: 14px;
-  font-weight: 600;
-  text-transform: uppercase;
-  letter-spacing: 0.1em;
-  cursor: pointer;
-  font-family: inherit;
-  box-shadow: 0 12px 30px rgba(212, 175, 55, 0.3), 0 0 20px rgba(212, 175, 55, 0.2);
-  transition: all 0.2s ease;
-  max-width: calc(100% - 48px);
-  text-align: center;
-}
-
-.findRideBtn:hover:not(:disabled) {
-  transform: translateX(-50%) translateY(-2px);
-  box-shadow: 0 16px 40px rgba(212, 175, 55, 0.4), 0 0 30px rgba(212, 175, 55, 0.3);
-}
-
-.findRideBtn:disabled {
-  opacity: 0.5;
-  cursor: not-allowed;
-}
-
 /* Error Banner */
 .errorBanner {
   position: absolute;
@@ -542,16 +508,6 @@
     display: none;
   }
 
-  /* Find Ride button - bottom action area */
-  .findRideBtn {
-    bottom: max(env(safe-area-inset-bottom) + 24px, 32px);
-    min-height: 56px;
-    padding: 16px 32px;
-    font-size: 14px;
-    max-width: calc(100% - 32px);
-    box-shadow: 0 4px 20px rgba(212, 175, 55, 0.4);
-  }
-
   /* Error banner below search */
   .errorBanner {
     top: calc(env(safe-area-inset-top) + 76px);
@@ -625,26 +581,6 @@
   .nearbyDot {
     width: 6px;
     height: 6px;
-  }
-
-  /* Bottom action - Find Ride Button */
-  .findRideBtn {
-    bottom: max(env(safe-area-inset-bottom) + 20px, 28px);
-    left: 16px;
-    right: 16px;
-    transform: none;
-    max-width: none;
-    width: auto;
-    min-height: 56px;
-    padding: 16px 24px;
-    font-size: 14px;
-    font-weight: 600;
-    border-radius: 16px;
-    box-shadow: 0 4px 24px rgba(212, 175, 55, 0.4);
-  }
-
-  .findRideBtn:hover:not(:disabled) {
-    transform: translateY(-2px);
   }
 
   /* Bottom sheet - Matches Panel */
@@ -743,15 +679,6 @@
     font-size: 11px;
   }
 
-  .findRideBtn {
-    left: 12px;
-    right: 12px;
-    min-height: 52px;
-    padding: 14px 20px;
-    font-size: 13px;
-    border-radius: 14px;
-  }
-
   .searchingBanner {
     padding: 20px 16px;
     padding-bottom: max(env(safe-area-inset-bottom) + 16px, 24px);
@@ -822,13 +749,6 @@
     top: calc(env(safe-area-inset-top) + 8px);
     left: 56px;
     right: 56px;
-  }
-
-  .findRideBtn {
-    bottom: max(env(safe-area-inset-bottom) + 12px, 16px);
-    min-height: 44px;
-    padding: 12px 24px;
-    font-size: 12px;
   }
 
   .searchingBanner {

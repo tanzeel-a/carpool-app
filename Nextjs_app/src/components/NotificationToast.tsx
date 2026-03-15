@@ -46,9 +46,17 @@ export default function NotificationToast({
 
   // Convert new incoming requests to toasts
   useEffect(() => {
+    console.log('[NotificationToast] Incoming requests:', incomingRequests.length);
+
     const newToasts: Toast[] = [];
 
     incomingRequests.forEach((request) => {
+      console.log('[NotificationToast] Processing request:', {
+        id: request.id,
+        from: request.fromUser.displayName,
+        alreadyShown: shownRequestIds.has(request.id),
+      });
+
       if (!shownRequestIds.has(request.id)) {
         shownRequestIds.add(request.id);
         newToasts.push({
@@ -60,6 +68,7 @@ export default function NotificationToast({
           duration: 30000, // 30 seconds for match requests
           data: request,
         });
+        console.log('[NotificationToast] Created toast for:', request.fromUser.displayName);
       }
     });
 

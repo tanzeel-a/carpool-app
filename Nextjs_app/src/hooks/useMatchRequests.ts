@@ -65,14 +65,27 @@ export function useMatchRequests(): UseMatchRequestsResult {
       where('status', '==', 'pending')
     );
 
+    console.log('[MatchRequests] Subscribing to incoming requests for:', user.uid);
+
     const unsubscribe = onSnapshot(
       q,
       (snapshot) => {
+        console.log('[MatchRequests] Incoming snapshot:', {
+          size: snapshot.size,
+          changes: snapshot.docChanges().length,
+        });
+
         const requests: MatchRequest[] = [];
         const now = new Date();
 
         snapshot.forEach((docSnap) => {
           const data = docSnap.data();
+          console.log('[MatchRequests] Incoming request data:', {
+            id: docSnap.id,
+            from: data.fromUser?.displayName,
+            status: data.status,
+          });
+
           const request = {
             id: docSnap.id,
             ...data,
@@ -90,6 +103,7 @@ export function useMatchRequests(): UseMatchRequestsResult {
           }
         });
 
+        console.log('[MatchRequests] Total incoming requests:', requests.length);
         setIncomingRequests(requests);
       },
       (err) => {
@@ -181,7 +195,13 @@ export function useMatchRequests(): UseMatchRequestsResult {
           expiresAt: Timestamp.fromDate(expiresAt),
         };
 
+        console.log('[MatchRequests] Sending request:', {
+          to: toPerson.displayName,
+          toUserId: toPerson.uid,
+        });
+
         const docRef = await addDoc(collection(db, 'matchRequests'), requestData);
+        console.log('[MatchRequests] Request sent successfully:', docRef.id);
         setLoading(false);
         return docRef.id;
       } catch (err) {
