@@ -5,8 +5,9 @@
  *
  * Queries nearby users from userPresence collection:
  * - Uses geohash bounds for efficient queries
- * - Filters: online, within radius, SAME DESTINATION, not blocked, not self
+ * - Filters: online, within radius, not blocked, not self
  * - Returns array of NearbyPerson with location + profile info
+ * - Real-time updates via Firestore onSnapshot
  */
 
 import { useState, useEffect, useCallback, useMemo, useRef } from 'react';
@@ -15,16 +16,14 @@ import {
   query,
   where,
   onSnapshot,
-  Timestamp,
 } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 import { geohashQueryBounds } from 'geofire-common';
 import { useAuth } from '@/components/AuthProvider';
-import { NearbyPerson, UserPresence, Location } from '@/types';
+import { NearbyPerson, UserPresence } from '@/types';
 
 interface UseNearbyPeopleOptions {
   userLocation: { lat: number; lng: number } | null;
-  destination: Location | null;
   radius?: number; // in meters
   enabled?: boolean;
 }
@@ -49,32 +48,8 @@ function calculateDistance(
   return R * c;
 }
 
-// Check if two destinations are similar (within 500m of each other)
-function isSameDestination(
-  dest1: Location | undefined,
-  dest2: Location | null
-): boolean {
-  if (!dest1 || !dest2) {
-    console.log('[NearbyPeople] Destination check failed - missing:', {
-      hasDest1: !!dest1,
-      hasDest2: !!dest2,
-    });
-    return false;
-  }
-
-  const distance = calculateDistance(dest1.lat, dest1.lng, dest2.lat, dest2.lng);
-  const isSame = distance < 500; // Within 500m is considered same destination
-  console.log('[NearbyPeople] Destination comparison:', {
-    dest1: `${dest1.lat.toFixed(4)},${dest1.lng.toFixed(4)}`,
-    dest2: `${dest2.lat.toFixed(4)},${dest2.lng.toFixed(4)}`,
-    distance: Math.round(distance),
-    isSame,
-  });
-  return isSame;
-}
-
 export function useNearbyPeople(options: UseNearbyPeopleOptions) {
-  const { userLocation, destination, radius = 500, enabled = true } = options;
+  const { userLocation, radius = 5000, enabled = true } = options; // Default 5km radius
   const { user } = useAuth();
   const [nearbyPeople, setNearbyPeople] = useState<NearbyPerson[]>([]);
   const [newlyFoundPeople, setNewlyFoundPeople] = useState<string[]>([]); // IDs of people just found (for animations)
@@ -88,19 +63,18 @@ export function useNearbyPeople(options: UseNearbyPeopleOptions) {
   const blockedUsers = useMemo(() => user?.blockedUsers || [], [user?.blockedUsers]);
 
   useEffect(() => {
-    if (!enabled || !userLocation || !user || !db || !destination) {
+    if (!enabled || !userLocation || !user || !db) {
       console.log('[NearbyPeople] Query disabled:', {
         enabled,
         hasLocation: !!userLocation,
         hasUser: !!user,
         hasDb: !!db,
-        hasDestination: !!destination,
       });
       setNearbyPeople([]);
       return;
     }
 
-    console.log('[NearbyPeople] Starting query with destination:', destination);
+    console.log('[NearbyPeople] Starting real-time query for nearby users...');
 
     const firestore = db;
 
@@ -128,46 +102,24 @@ export function useNearbyPeople(options: UseNearbyPeopleOptions) {
       const unsubscribe = onSnapshot(
         q,
         (snapshot) => {
-          console.log('[NearbyPeople] Snapshot received:', {
-            changeCount: snapshot.docChanges().length,
-            totalDocs: snapshot.docs.length,
+          console.log('[NearbyPeople] Real-time update:', {
+            changes: snapshot.docChanges().length,
+            total: snapshot.docs.length,
           });
 
           snapshot.docChanges().forEach((change) => {
             const docData = change.doc.data() as UserPresence;
             const personId = change.doc.id;
 
-            console.log('[NearbyPeople] Processing person:', {
-              id: personId,
-              displayName: docData.displayName,
-              isOnline: docData.isOnline,
-              hasBroadcast: !!docData.broadcast,
-              hasDestination: !!docData.broadcast?.destination,
-              changeType: change.type,
-            });
-
             if (change.type === 'removed') {
+              console.log('[NearbyPeople] User went offline:', docData.displayName);
               peopleMap.delete(personId);
             } else {
               // Filter out self and blocked users
-              if (docData.uid === user.uid) {
-                console.log('[NearbyPeople] Filtered out: self');
-                return;
-              }
-              if (blockedUsers.includes(docData.uid)) {
-                console.log('[NearbyPeople] Filtered out: blocked user');
-                return;
-              }
+              if (docData.uid === user.uid) return;
+              if (blockedUsers.includes(docData.uid)) return;
 
-              // Check if user has a destination that matches ours
-              const theirDestination = docData.broadcast?.destination;
-              if (!isSameDestination(theirDestination, destination)) {
-                console.log('[NearbyPeople] Filtered out: destination mismatch');
-                peopleMap.delete(personId);
-                return;
-              }
-
-              // Check if user is within actual radius
+              // Calculate distance
               const distance = calculateDistance(
                 userLocation.lat,
                 userLocation.lng,
@@ -175,8 +127,9 @@ export function useNearbyPeople(options: UseNearbyPeopleOptions) {
                 docData.location.longitude
               );
 
+              // Check if within radius
               if (distance <= radius) {
-                // Check if presence is stale (more than 10 minutes old)
+                // Check if presence is stale (more than 5 minutes old)
                 let lastUpdatedTime = Date.now();
                 if (docData.lastUpdated) {
                   if (typeof docData.lastUpdated.toDate === 'function') {
@@ -185,7 +138,7 @@ export function useNearbyPeople(options: UseNearbyPeopleOptions) {
                     lastUpdatedTime = docData.lastUpdated.getTime();
                   }
                 }
-                const staleThreshold = 10 * 60 * 1000; // 10 minutes
+                const staleThreshold = 5 * 60 * 1000; // 5 minutes
                 const isStale = Date.now() - lastUpdatedTime > staleThreshold;
 
                 if (!isStale) {
@@ -203,6 +156,13 @@ export function useNearbyPeople(options: UseNearbyPeopleOptions) {
                     broadcast: docData.broadcast,
                   };
                   peopleMap.set(personId, person);
+                  console.log('[NearbyPeople] User found:', {
+                    name: docData.displayName,
+                    distance: Math.round(distance) + 'm',
+                    hasDestination: !!docData.broadcast?.destination,
+                  });
+                } else {
+                  peopleMap.delete(personId);
                 }
               } else {
                 peopleMap.delete(personId);
@@ -244,7 +204,7 @@ export function useNearbyPeople(options: UseNearbyPeopleOptions) {
     return () => {
       unsubscribes.forEach((unsub) => unsub());
     };
-  }, [enabled, userLocation?.lat, userLocation?.lng, destination?.lat, destination?.lng, radius, user?.uid, blockedUsers]);
+  }, [enabled, userLocation?.lat, userLocation?.lng, radius, user?.uid, blockedUsers]);
 
   // Refresh function
   const refresh = useCallback(() => {

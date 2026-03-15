@@ -92,12 +92,11 @@ export default function DashboardPage() {
     }
   }, [presenceLocation]);
 
-  // Nearby people - query nearby users with SAME DESTINATION
+  // Nearby people - query ALL online users nearby (real-time)
   const { nearbyPeople, newlyFoundPeople } = useNearbyPeople({
     userLocation,
-    destination,
     radius: searchRadius,
-    enabled: !!user && !!userLocation && !!destination,
+    enabled: !!user && !!userLocation,
   });
 
   // Match requests - handle incoming/outgoing requests
