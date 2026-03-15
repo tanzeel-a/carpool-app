@@ -34,11 +34,6 @@ export default function CurrentUserMarker({
       mapPaneName={OverlayView.OVERLAY_MOUSE_TARGET}
     >
       <div className={styles.markerContainer}>
-        {/* Pulse rings */}
-        <div className={styles.pulseRing} />
-        <div className={styles.pulseRing} style={{ animationDelay: '0.5s' }} />
-        <div className={styles.pulseRing} style={{ animationDelay: '1s' }} />
-
         {/* Marker pin */}
         <div className={styles.markerPin}>
           {/* Marker image */}
