@@ -95,16 +95,14 @@
 /* Photo wrapper - positioned inside the marker circle */
 .photoWrapper {
   position: absolute;
-  top: 5px;
+  top: 7px;
   left: 50%;
   transform: translateX(-50%);
-  width: 32px;
-  height: 32px;
+  width: 24px;
+  height: 24px;
   border-radius: 50%;
   overflow: hidden;
   background: linear-gradient(135deg, #d4af37 0%, #aa8a2e 100%);
-  border: 2px solid #d4af37;
-  animation: glowPulse 2s ease-in-out infinite;
 }
 
 .photo {
@@ -158,9 +156,9 @@
   }
 
   .photoWrapper {
-    width: 28px;
-    height: 28px;
-    top: 4px;
+    width: 22px;
+    height: 22px;
+    top: 6px;
   }
 
   .photoFallback {
@@ -186,9 +184,9 @@
   }
 
   .photoWrapper {
-    width: 26px;
-    height: 26px;
-    top: 4px;
+    width: 20px;
+    height: 20px;
+    top: 5px;
   }
 
   .photoFallback {
@@ -218,9 +216,9 @@
   }
 
   .photoWrapper {
-    width: 24px;
-    height: 24px;
-    top: 3px;
+    width: 18px;
+    height: 18px;
+    top: 4px;
   }
 
   .photoFallback {
