@@ -3,8 +3,8 @@
 /**
  * CurrentUserMarker Component
  *
- * Circle marker with the current user's profile photo:
- * - Circle PNG marker with profile photo from Google auth
+ * Teardrop marker with the current user's profile photo:
+ * - PNG marker with profile photo from Google auth
  * - Pulsing animation to indicate "You are here"
  * - Golden accent to match app theme
  */
@@ -39,11 +39,11 @@ export default function CurrentUserMarker({
         <div className={styles.pulseRing} style={{ animationDelay: '0.5s' }} />
         <div className={styles.pulseRing} style={{ animationDelay: '1s' }} />
 
-        {/* Circle marker */}
-        <div className={styles.circleMarker}>
+        {/* Marker pin */}
+        <div className={styles.markerPin}>
           {/* Marker image */}
           <img
-            src="/assets/map_marker_circle.png"
+            src="/assets/map_marker32.png"
             alt="Your location"
             className={styles.markerImage}
             draggable={false}

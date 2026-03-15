@@ -1,19 +1,19 @@
 /**
  * CurrentUserMarker Styles
- * Circle marker with profile photo for the current user
+ * Teardrop marker with profile photo for the current user
  */
 
 /* Marker drop-in animation */
 @keyframes markerDrop {
   0% {
-    transform: translate(-50%, -50%) translateY(-50px) scale(0);
+    transform: translate(-50%, -100%) translateY(-50px) scale(0);
     opacity: 0;
   }
   60% {
-    transform: translate(-50%, -50%) translateY(10px) scale(1.1);
+    transform: translate(-50%, -100%) translateY(10px) scale(1.1);
   }
   100% {
-    transform: translate(-50%, -50%) translateY(0) scale(1);
+    transform: translate(-50%, -100%) translateY(0) scale(1);
     opacity: 1;
   }
 }
@@ -33,10 +33,10 @@
 /* Gentle hover animation */
 @keyframes gentleFloat {
   0%, 100% {
-    transform: translate(-50%, -50%) translateY(0);
+    transform: translate(-50%, -100%) translateY(0);
   }
   50% {
-    transform: translate(-50%, -50%) translateY(-4px);
+    transform: translate(-50%, -100%) translateY(-4px);
   }
 }
 
@@ -56,7 +56,7 @@
   display: flex;
   flex-direction: column;
   align-items: center;
-  transform: translate(-50%, -50%);
+  transform: translate(-50%, -100%);
   pointer-events: none;
   animation: markerDrop 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards,
              gentleFloat 3s ease-in-out 1s infinite;
@@ -78,12 +78,12 @@
   z-index: -1;
 }
 
-/* Circle marker container */
-.circleMarker {
+/* Marker pin container */
+.markerPin {
   position: relative;
-  width: 60px;
-  height: 60px;
-  filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.15));
+  width: 56px;
+  height: 72px;
+  filter: drop-shadow(0 6px 12px rgba(0, 0, 0, 0.25));
 }
 
 .markerImage {
@@ -92,14 +92,14 @@
   object-fit: contain;
 }
 
-/* Photo wrapper - positioned in center of circle */
+/* Photo wrapper - positioned inside the marker circle */
 .photoWrapper {
   position: absolute;
-  top: 50%;
+  top: 5px;
   left: 50%;
-  transform: translate(-50%, -50%);
-  width: 36px;
-  height: 36px;
+  transform: translateX(-50%);
+  width: 32px;
+  height: 32px;
   border-radius: 50%;
   overflow: hidden;
   background: linear-gradient(135deg, #d4af37 0%, #aa8a2e 100%);
@@ -119,7 +119,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 18px;
+  font-size: 16px;
   font-weight: 600;
   color: #ffffff;
   background: linear-gradient(135deg, #d4af37 0%, #aa8a2e 100%);
@@ -131,7 +131,10 @@
 
 /* Name label */
 .nameLabel {
-  margin-top: 4px;
+  position: absolute;
+  bottom: -28px;
+  left: 50%;
+  transform: translateX(-50%);
   white-space: nowrap;
 }
 
@@ -149,18 +152,19 @@
 
 /* Tablet adjustments */
 @media (max-width: 768px) {
-  .circleMarker {
-    width: 54px;
-    height: 54px;
+  .markerPin {
+    width: 50px;
+    height: 65px;
   }
 
   .photoWrapper {
-    width: 32px;
-    height: 32px;
+    width: 28px;
+    height: 28px;
+    top: 4px;
   }
 
   .photoFallback {
-    font-size: 16px;
+    font-size: 14px;
   }
 
   .pulseRing {
@@ -176,23 +180,28 @@
 
 /* Mobile adjustments */
 @media (max-width: 480px) {
-  .circleMarker {
-    width: 50px;
-    height: 50px;
+  .markerPin {
+    width: 46px;
+    height: 60px;
   }
 
   .photoWrapper {
-    width: 30px;
-    height: 30px;
+    width: 26px;
+    height: 26px;
+    top: 4px;
   }
 
   .photoFallback {
-    font-size: 14px;
+    font-size: 13px;
   }
 
   .pulseRing {
     width: 70px;
     height: 70px;
+  }
+
+  .nameLabel {
+    bottom: -24px;
   }
 
   .name {
@@ -203,14 +212,15 @@
 
 /* Extra small phones */
 @media (max-width: 360px) {
-  .circleMarker {
-    width: 46px;
-    height: 46px;
+  .markerPin {
+    width: 42px;
+    height: 54px;
   }
 
   .photoWrapper {
-    width: 28px;
-    height: 28px;
+    width: 24px;
+    height: 24px;
+    top: 3px;
   }
 
   .photoFallback {
