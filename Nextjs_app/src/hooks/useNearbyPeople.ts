@@ -5,11 +5,11 @@
  *
  * Queries nearby users from userPresence collection:
  * - Uses geohash bounds for efficient queries
- * - Filters: online, within radius, not blocked, not self
+ * - Filters: online, within radius, SAME DESTINATION, not blocked, not self
  * - Returns array of NearbyPerson with location + profile info
  */
 
-import { useState, useEffect, useCallback, useMemo } from 'react';
+import { useState, useEffect, useCallback, useMemo, useRef } from 'react';
 import {
   collection,
   query,
@@ -20,10 +20,11 @@ import {
 import { db } from '@/lib/firebase';
 import { geohashQueryBounds } from 'geofire-common';
 import { useAuth } from '@/components/AuthProvider';
-import { NearbyPerson, UserPresence } from '@/types';
+import { NearbyPerson, UserPresence, Location } from '@/types';
 
 interface UseNearbyPeopleOptions {
   userLocation: { lat: number; lng: number } | null;
+  destination: Location | null;
   radius?: number; // in meters
   enabled?: boolean;
 }
@@ -48,23 +49,38 @@ function calculateDistance(
   return R * c;
 }
 
+// Check if two destinations are similar (within 500m of each other)
+function isSameDestination(
+  dest1: Location | undefined,
+  dest2: Location | null
+): boolean {
+  if (!dest1 || !dest2) return false;
+
+  const distance = calculateDistance(dest1.lat, dest1.lng, dest2.lat, dest2.lng);
+  return distance < 500; // Within 500m is considered same destination
+}
+
 export function useNearbyPeople(options: UseNearbyPeopleOptions) {
-  const { userLocation, radius = 500, enabled = true } = options;
+  const { userLocation, destination, radius = 500, enabled = true } = options;
   const { user } = useAuth();
   const [nearbyPeople, setNearbyPeople] = useState<NearbyPerson[]>([]);
+  const [newlyFoundPeople, setNewlyFoundPeople] = useState<string[]>([]); // IDs of people just found (for animations)
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  // Track previously seen people for detecting new arrivals
+  const previousPeopleRef = useRef<Set<string>>(new Set());
 
   // Get blocked users list
   const blockedUsers = useMemo(() => user?.blockedUsers || [], [user?.blockedUsers]);
 
   useEffect(() => {
-    if (!enabled || !userLocation || !user || !db) {
+    if (!enabled || !userLocation || !user || !db || !destination) {
       setNearbyPeople([]);
       return;
     }
 
-    const firestore = db; // TypeScript narrowing helper
+    const firestore = db;
 
     setLoading(true);
     setError(null);
@@ -74,13 +90,6 @@ export function useNearbyPeople(options: UseNearbyPeopleOptions) {
       [userLocation.lat, userLocation.lng],
       radius
     );
-
-    console.log('[NearbyPeople] Querying with:', {
-      userLocation,
-      radius,
-      bounds,
-      currentUserId: user.uid,
-    });
 
     const unsubscribes: (() => void)[] = [];
     const peopleMap = new Map<string, NearbyPerson>();
@@ -97,34 +106,25 @@ export function useNearbyPeople(options: UseNearbyPeopleOptions) {
       const unsubscribe = onSnapshot(
         q,
         (snapshot) => {
-          console.log('[NearbyPeople] Snapshot received:', snapshot.docs.length, 'docs');
-
           snapshot.docChanges().forEach((change) => {
             const docData = change.doc.data() as UserPresence;
             const personId = change.doc.id;
-
-            console.log('[NearbyPeople] Doc change:', {
-              type: change.type,
-              personId,
-              uid: docData.uid,
-              isOnline: docData.isOnline,
-              displayName: docData.displayName,
-            });
 
             if (change.type === 'removed') {
               peopleMap.delete(personId);
             } else {
               // Filter out self and blocked users
-              if (docData.uid === user.uid) {
-                console.log('[NearbyPeople] Filtering out self:', docData.uid);
-                return;
-              }
-              if (blockedUsers.includes(docData.uid)) {
-                console.log('[NearbyPeople] Filtering out blocked user:', docData.uid);
+              if (docData.uid === user.uid) return;
+              if (blockedUsers.includes(docData.uid)) return;
+
+              // Check if user has a destination that matches ours
+              const theirDestination = docData.broadcast?.destination;
+              if (!isSameDestination(theirDestination, destination)) {
+                peopleMap.delete(personId);
                 return;
               }
 
-              // Check if user is within actual radius (geohash is approximate)
+              // Check if user is within actual radius
               const distance = calculateDistance(
                 userLocation.lat,
                 userLocation.lng,
@@ -132,18 +132,10 @@ export function useNearbyPeople(options: UseNearbyPeopleOptions) {
                 docData.location.longitude
               );
 
-              console.log('[NearbyPeople] Distance check:', {
-                uid: docData.uid,
-                distance,
-                radius,
-                withinRadius: distance <= radius,
-              });
-
               if (distance <= radius) {
                 // Check if presence is stale (more than 10 minutes old)
                 let lastUpdatedTime = Date.now();
                 if (docData.lastUpdated) {
-                  // Handle both Timestamp objects and already-converted dates
                   if (typeof docData.lastUpdated.toDate === 'function') {
                     lastUpdatedTime = docData.lastUpdated.toDate().getTime();
                   } else if (docData.lastUpdated instanceof Date) {
@@ -152,12 +144,6 @@ export function useNearbyPeople(options: UseNearbyPeopleOptions) {
                 }
                 const staleThreshold = 10 * 60 * 1000; // 10 minutes
                 const isStale = Date.now() - lastUpdatedTime > staleThreshold;
-
-                console.log('[NearbyPeople] Staleness check:', {
-                  uid: docData.uid,
-                  lastUpdatedTime,
-                  isStale,
-                });
 
                 if (!isStale) {
                   const person: NearbyPerson = {
@@ -174,20 +160,31 @@ export function useNearbyPeople(options: UseNearbyPeopleOptions) {
                     broadcast: docData.broadcast,
                   };
                   peopleMap.set(personId, person);
-                  console.log('[NearbyPeople] Added person:', docData.displayName);
                 }
               } else {
-                // Outside radius, remove
-                console.log('[NearbyPeople] Outside radius, removing:', docData.uid);
                 peopleMap.delete(personId);
               }
             }
           });
 
-          // Sort by distance and update state
+          // Sort by distance
           const sortedPeople = Array.from(peopleMap.values()).sort(
             (a, b) => a.distance - b.distance
           );
+
+          // Detect newly found people (for pop-in animations)
+          const currentIds = new Set(sortedPeople.map(p => p.id));
+          const newPeople = sortedPeople
+            .filter(p => !previousPeopleRef.current.has(p.id))
+            .map(p => p.id);
+
+          if (newPeople.length > 0) {
+            setNewlyFoundPeople(newPeople);
+            // Clear the "new" status after animation completes
+            setTimeout(() => setNewlyFoundPeople([]), 1000);
+          }
+
+          previousPeopleRef.current = currentIds;
           setNearbyPeople(sortedPeople);
           setLoading(false);
         },
@@ -204,17 +201,17 @@ export function useNearbyPeople(options: UseNearbyPeopleOptions) {
     return () => {
       unsubscribes.forEach((unsub) => unsub());
     };
-  }, [enabled, userLocation?.lat, userLocation?.lng, radius, user?.uid, blockedUsers]);
+  }, [enabled, userLocation?.lat, userLocation?.lng, destination?.lat, destination?.lng, radius, user?.uid, blockedUsers]);
 
-  // Refresh function to force re-query
+  // Refresh function
   const refresh = useCallback(() => {
-    // The effect will re-run when dependencies change
-    // For manual refresh, we can just clear and let it rebuild
     setNearbyPeople([]);
+    previousPeopleRef.current = new Set();
   }, []);
 
   return {
     nearbyPeople,
+    newlyFoundPeople,
     loading,
     error,
     refresh,

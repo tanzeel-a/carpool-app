@@ -102,11 +102,12 @@ export default function DashboardPage() {
     }
   }, [presenceLocation]);
 
-  // Nearby people - query nearby users
-  const { nearbyPeople } = useNearbyPeople({
+  // Nearby people - query nearby users with SAME DESTINATION
+  const { nearbyPeople, newlyFoundPeople } = useNearbyPeople({
     userLocation,
+    destination,
     radius: searchRadius,
-    enabled: !!user && !!userLocation,
+    enabled: !!user && !!userLocation && !!destination,
   });
 
   // Match requests - handle incoming/outgoing requests
@@ -629,6 +630,7 @@ export default function DashboardPage() {
           focusLocation={focusLocation}
           currentUser={user ? { photoURL: user.photoURL, displayName: user.displayName } : null}
           nearbyPeople={nearbyPeople}
+          newlyFoundPeople={newlyFoundPeople}
           selectedPersonId={selectedPerson?.id}
           onPersonClick={handlePersonClick}
         />
@@ -732,6 +734,7 @@ export default function DashboardPage() {
           otherParticipant={activeChatParticipant}
           isInitiallyExpanded={true}
           onClose={handleClosePersistentChat}
+          onEndChat={handleClosePersistentChat}
           onViewLocation={handleViewLocationFromChat}
           myLocation={userLocation}
         />

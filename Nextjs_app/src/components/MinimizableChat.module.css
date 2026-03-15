@@ -444,6 +444,30 @@
   cursor: not-allowed;
 }
 
+/* End Chat Button */
+.endChatBtn {
+  width: 100%;
+  padding: 12px;
+  background: transparent;
+  border: none;
+  border-top: 1px solid rgba(17, 16, 14, 0.08);
+  color: #dc2626;
+  font-size: 13px;
+  font-weight: 500;
+  font-family: inherit;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.endChatBtn:hover:not(:disabled) {
+  background: rgba(220, 38, 38, 0.08);
+}
+
+.endChatBtn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
 /* Tablet adjustments */
 @media (max-width: 768px) {
   .chatContainer {

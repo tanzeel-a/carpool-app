@@ -36,6 +36,7 @@ interface MapViewProps {
   } | null;
   // Nearby people feature
   nearbyPeople?: NearbyPerson[];
+  newlyFoundPeople?: string[]; // IDs of people just found (for pop-in animation)
   selectedPersonId?: string | null;
   onPersonClick?: (person: NearbyPerson) => void;
 }
@@ -241,6 +242,7 @@ export default function MapView({
   focusLocation,
   currentUser,
   nearbyPeople = [],
+  newlyFoundPeople = [],
   selectedPersonId,
   onPersonClick,
 }: MapViewProps) {
@@ -433,6 +435,7 @@ export default function MapView({
             person={person}
             onClick={onPersonClick}
             isSelected={selectedPersonId === person.id}
+            isNew={newlyFoundPeople.includes(person.id)}
             animationDelay={index * 100}
           />
         ))}

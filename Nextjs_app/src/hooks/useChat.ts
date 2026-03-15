@@ -50,6 +50,7 @@ interface UseChatResult {
   sendLocation: (location: { lat: number; lng: number }) => Promise<void>;
   markAsRead: () => Promise<void>;
   loadMore: () => Promise<void>;
+  endChat: () => Promise<void>;
 }
 
 export function useChat(options: UseChatOptions): UseChatResult {
@@ -304,6 +305,33 @@ export function useChat(options: UseChatOptions): UseChatResult {
     }
   }, [chatId, loadingMore, hasMore]);
 
+  // End chat - delete chat and all messages (no history)
+  const endChat = useCallback(async (): Promise<void> => {
+    if (!chatId || !db) return;
+
+    const firestore = db;
+    const cId = chatId;
+
+    try {
+      // Delete all messages in the chat
+      const messagesRef = collection(firestore, 'chats', cId, 'messages');
+      const messagesSnapshot = await getDocs(messagesRef);
+      const deletePromises = messagesSnapshot.docs.map((docSnap) =>
+        import('firebase/firestore').then(({ deleteDoc }) =>
+          deleteDoc(doc(firestore, 'chats', cId, 'messages', docSnap.id))
+        )
+      );
+      await Promise.all(deletePromises);
+
+      // Delete the chat document
+      const { deleteDoc: delDoc } = await import('firebase/firestore');
+      await delDoc(doc(firestore, 'chats', cId));
+    } catch (err) {
+      console.error('Error ending chat:', err);
+      setError('Failed to end chat');
+    }
+  }, [chatId]);
+
   return {
     messages,
     chat,
@@ -316,6 +344,7 @@ export function useChat(options: UseChatOptions): UseChatResult {
     sendLocation,
     markAsRead,
     loadMore,
+    endChat,
   };
 }
 

@@ -24,6 +24,7 @@ interface MinimizableChatProps {
   };
   isInitiallyExpanded?: boolean;
   onClose: () => void;
+  onEndChat?: () => void;
   onViewLocation?: (location: { lat: number; lng: number }, isMe: boolean) => void;
   myLocation?: { lat: number; lng: number } | null;
 }
@@ -33,11 +34,13 @@ export default function MinimizableChat({
   otherParticipant,
   isInitiallyExpanded = true,
   onClose,
+  onEndChat,
   onViewLocation,
   myLocation,
 }: MinimizableChatProps) {
   const [isExpanded, setIsExpanded] = useState(isInitiallyExpanded);
   const [inputText, setInputText] = useState('');
+  const [isEnding, setIsEnding] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const messagesContainerRef = useRef<HTMLDivElement>(null);
 
@@ -51,7 +54,16 @@ export default function MinimizableChat({
     loadMore,
     hasMore,
     loadingMore,
+    endChat,
   } = useChat({ chatId, enabled: true });
+
+  // Handle ending chat
+  const handleEndChat = async () => {
+    setIsEnding(true);
+    await endChat();
+    onEndChat?.();
+    onClose();
+  };
 
   // Scroll to bottom when new messages arrive
   useEffect(() => {
@@ -277,6 +289,15 @@ export default function MinimizableChat({
           </svg>
         </button>
       </form>
+
+      {/* End Chat Button */}
+      <button
+        className={styles.endChatBtn}
+        onClick={handleEndChat}
+        disabled={isEnding}
+      >
+        {isEnding ? 'Ending...' : 'End Chat'}
+      </button>
     </div>
   );
 }

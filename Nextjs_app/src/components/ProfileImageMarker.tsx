@@ -19,6 +19,7 @@ interface ProfileImageMarkerProps {
   person: NearbyPerson;
   onClick?: (person: NearbyPerson) => void;
   isSelected?: boolean;
+  isNew?: boolean; // Just found - show pop-in animation
   animationDelay?: number;
 }
 
@@ -26,6 +27,7 @@ export default function ProfileImageMarker({
   person,
   onClick,
   isSelected = false,
+  isNew = false,
   animationDelay = 0,
 }: ProfileImageMarkerProps) {
   const position = useMemo(
@@ -52,7 +54,7 @@ export default function ProfileImageMarker({
       mapPaneName={OverlayView.OVERLAY_MOUSE_TARGET}
     >
       <div
-        className={`${styles.markerContainer} ${isSelected ? styles.selected : ''}`}
+        className={`${styles.markerContainer} ${isSelected ? styles.selected : ''} ${isNew ? styles.popIn : ''}`}
         onClick={handleClick}
         style={{ animationDelay: `${animationDelay}ms` }}
       >
