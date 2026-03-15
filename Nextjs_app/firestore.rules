@@ -2,25 +2,31 @@ rules_version = '2';
 
 service cloud.firestore {
   match /databases/{database}/documents {
-    // User presence - anyone authenticated can read/write their own
+    // Users collection - for user profiles
+    match /users/{userId} {
+      allow read: if request.auth != null;
+      allow write: if request.auth != null && request.auth.uid == userId;
+    }
+
+    // User presence - for nearby people feature
     match /userPresence/{docId} {
       allow read: if request.auth != null;
       allow write: if request.auth != null && request.auth.uid == docId;
     }
 
-    // Rides - authenticated users can read all, write their own
+    // Rides
     match /rides/{rideId} {
       allow read: if request.auth != null;
       allow write: if request.auth != null;
     }
 
-    // Match requests - authenticated users can read/write
+    // Match requests
     match /matchRequests/{requestId} {
       allow read: if request.auth != null;
       allow write: if request.auth != null;
     }
 
-    // Chats - authenticated users can read/write
+    // Chats
     match /chats/{chatId} {
       allow read, write: if request.auth != null;
 
@@ -29,7 +35,7 @@ service cloud.firestore {
       }
     }
 
-    // Matches - authenticated users can read/write
+    // Matches
     match /matches/{matchId} {
       allow read, write: if request.auth != null;
     }
