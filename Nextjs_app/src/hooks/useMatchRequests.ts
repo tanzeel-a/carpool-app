@@ -237,6 +237,11 @@ export function useMatchRequests(): UseMatchRequestsResult {
             },
           },
           createdAt: Timestamp.now(),
+          lastMessage: {
+            text: 'Match accepted! Start chatting.',
+            senderId: 'system',
+            timestamp: Timestamp.now(),
+          },
         };
 
         await setDoc(chatRef, chatData, { merge: true });

@@ -201,31 +201,21 @@ export function useUserPresence(options: UseUserPresenceOptions = {}) {
     };
   }, [enabled, user, updatePresence]);
 
-  // Go offline when component unmounts or window closes
+  // Go offline when window closes (not on tab switch or unmount)
   useEffect(() => {
     if (!user) return;
 
     const handleBeforeUnload = () => {
+      // Only go offline when actually closing the window/tab
       goOffline();
-    };
-
-    const handleVisibilityChange = () => {
-      if (document.visibilityState === 'hidden') {
-        goOffline();
-      } else if (document.visibilityState === 'visible' && location) {
-        updatePresence(location, true);
-      }
     };
 
     window.addEventListener('beforeunload', handleBeforeUnload);
-    document.addEventListener('visibilitychange', handleVisibilityChange);
 
     return () => {
       window.removeEventListener('beforeunload', handleBeforeUnload);
-      document.removeEventListener('visibilitychange', handleVisibilityChange);
-      goOffline();
     };
-  }, [user, goOffline, updatePresence, location]);
+  }, [user, goOffline]);
 
   return {
     location,
