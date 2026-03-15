@@ -3,9 +3,9 @@
 /**
  * ProfileImageMarker Component
  *
- * Google Maps-style teardrop pin with circular profile photo:
+ * Custom map marker with circular profile photo:
  * - OverlayView wrapper for map positioning
- * - Teardrop SVG container with profile photo
+ * - PNG marker image with profile photo overlay
  * - Optional broadcast indicator (speech bubble icon)
  * - Click handler to open MatchRequestModal
  */
@@ -64,34 +64,15 @@ export default function ProfileImageMarker({
           </>
         )}
 
-        {/* Teardrop pin */}
-        <div className={styles.teardropPin}>
-          <svg
-            viewBox="0 0 40 52"
-            fill="none"
-            xmlns="http://www.w3.org/2000/svg"
-            className={styles.teardropSvg}
-          >
-            {/* Shadow */}
-            <ellipse
-              cx="20"
-              cy="50"
-              rx="8"
-              ry="2"
-              fill="rgba(0,0,0,0.2)"
-            />
-            {/* Teardrop shape */}
-            <path
-              d="M20 0C8.954 0 0 8.954 0 20c0 15 20 30 20 30s20-15 20-30C40 8.954 31.046 0 20 0z"
-              fill="#ffffff"
-              stroke="#d4af37"
-              strokeWidth="2"
-            />
-            {/* Inner circle for photo clipping */}
-            <clipPath id={`photo-clip-${person.id}`}>
-              <circle cx="20" cy="18" r="14" />
-            </clipPath>
-          </svg>
+        {/* Marker pin */}
+        <div className={styles.markerPin}>
+          {/* Marker image */}
+          <img
+            src="/assets/map_marker32.png"
+            alt="Map marker"
+            className={styles.markerImage}
+            draggable={false}
+          />
 
           {/* Profile photo */}
           <div className={styles.photoWrapper}>
@@ -100,8 +81,8 @@ export default function ProfileImageMarker({
                 src={person.photoURL}
                 alt={person.displayName}
                 className={styles.photo}
+                referrerPolicy="no-referrer"
                 onError={(e) => {
-                  // Fallback to initial if image fails
                   e.currentTarget.style.display = 'none';
                   e.currentTarget.nextElementSibling?.classList.remove(styles.hidden);
                 }}

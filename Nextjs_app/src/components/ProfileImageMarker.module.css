@@ -1,6 +1,6 @@
 /**
  * ProfileImageMarker Styles
- * Google Maps-style teardrop pin with profile photo
+ * Custom map marker with profile photo
  */
 
 /* Marker drop-in animation */
@@ -78,27 +78,28 @@
   z-index: -1;
 }
 
-/* Teardrop pin container */
-.teardropPin {
+/* Marker pin container */
+.markerPin {
   position: relative;
   width: 48px;
   height: 62px;
   filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.2));
 }
 
-.teardropSvg {
+.markerImage {
   width: 100%;
   height: 100%;
+  object-fit: contain;
 }
 
-/* Photo wrapper - positioned inside the teardrop */
+/* Photo wrapper - positioned inside the marker circle */
 .photoWrapper {
   position: absolute;
-  top: 5px;
+  top: 4px;
   left: 50%;
   transform: translateX(-50%);
-  width: 34px;
-  height: 34px;
+  width: 28px;
+  height: 28px;
   border-radius: 50%;
   overflow: hidden;
   background: linear-gradient(135deg, #d4af37 0%, #aa8a2e 100%);
@@ -204,14 +205,14 @@
 
 /* Tablet adjustments */
 @media (max-width: 768px) {
-  .teardropPin {
+  .markerPin {
     width: 44px;
     height: 57px;
   }
 
   .photoWrapper {
-    width: 30px;
-    height: 30px;
+    width: 26px;
+    height: 26px;
     top: 4px;
   }
 
@@ -252,15 +253,15 @@
 
 /* Mobile adjustments */
 @media (max-width: 480px) {
-  .teardropPin {
+  .markerPin {
     width: 40px;
     height: 52px;
   }
 
   .photoWrapper {
-    width: 26px;
-    height: 26px;
-    top: 4px;
+    width: 24px;
+    height: 24px;
+    top: 3px;
   }
 
   .photoFallback {
@@ -312,15 +313,15 @@
 
 /* Extra small phones */
 @media (max-width: 360px) {
-  .teardropPin {
+  .markerPin {
     width: 36px;
     height: 47px;
   }
 
   .photoWrapper {
-    width: 24px;
-    height: 24px;
-    top: 3px;
+    width: 22px;
+    height: 22px;
+    top: 2px;
   }
 
   .photoFallback {
