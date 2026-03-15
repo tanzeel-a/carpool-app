@@ -16,7 +16,6 @@ import { useAuth } from '@/components/AuthProvider';
 import MapView from '@/components/MapView';
 import RideCard from '@/components/RideCard';
 import PlacesAutocomplete from '@/components/PlacesAutocomplete';
-import ChatPopup from '@/components/ChatPopup';
 import MatchRequestModal from '@/components/MatchRequestModal';
 import MinimizableChat, { ChatBubbles } from '@/components/MinimizableChat';
 import GroupRidePanel from '@/components/GroupRidePanel';
@@ -54,15 +53,6 @@ export default function DashboardPage() {
   const [isSearching, setIsSearching] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [searchRadius, setSearchRadius] = useState(500); // in meters (500m default for nearby people)
-
-  // Chat and matched rider state
-  const [isChatOpen, setIsChatOpen] = useState(false);
-  const [matchedRider, setMatchedRider] = useState<{
-    displayName: string;
-    photoURL: string;
-    location: { lat: number; lng: number };
-  } | null>(null);
-  const matchedRiderLocationRef = useRef<{ lat: number; lng: number } | null>(null);
 
   // Focus location for map panning
   const [focusLocation, setFocusLocation] = useState<{
@@ -466,60 +456,14 @@ export default function DashboardPage() {
         createdAt: Timestamp.now(),
       });
 
-      // Store matched rider info for chat
-      const riderLocation = {
-        lat: ride.origin.latitude,
-        lng: ride.origin.longitude,
-      };
-      setMatchedRider({
-        displayName: ride.displayName,
-        photoURL: ride.photoURL,
-        location: riderLocation,
-      });
-      matchedRiderLocationRef.current = riderLocation;
-
       setCurrentRide(null);
       setNearbyRides([]);
       setIsSearching(false);
-
-      // Open chat popup
-      setIsChatOpen(true);
     } catch (err) {
       console.error('Error accepting match:', err);
       setError('Failed to confirm match. Please try again.');
     }
   };
-
-  // Close chat and reset
-  const handleCloseChat = () => {
-    setIsChatOpen(false);
-    setMatchedRider(null);
-    matchedRiderLocationRef.current = null;
-    setDestination(null);
-  };
-
-  // Handle location share in chat
-  const handleLocationShare = () => {
-    // Location is already being tracked, this just triggers visual feedback
-  };
-
-  // Handle view location from chat - minimize chat and pan map to location
-  const handleViewLocation = useCallback((location: { lat: number; lng: number }, isMe: boolean) => {
-    // Close/minimize chat to show map
-    setIsChatOpen(false);
-
-    // Pan map to the location
-    setFocusLocation({
-      lat: location.lat,
-      lng: location.lng,
-      timestamp: Date.now(),
-    });
-
-    // Reopen chat after a short delay so user can see the map
-    setTimeout(() => {
-      setIsChatOpen(true);
-    }, 2000);
-  }, []);
 
   const [menuOpen, setMenuOpen] = useState(false);
 
@@ -625,7 +569,6 @@ export default function DashboardPage() {
           userLocation={userLocation}
           destination={destination}
           nearbyRides={nearbyRides}
-          matchedRiderLocation={matchedRider?.location}
           searchRadius={searchRadius}
           focusLocation={focusLocation}
           currentUser={user ? { photoURL: user.photoURL, displayName: user.displayName } : null}
@@ -691,22 +634,6 @@ export default function DashboardPage() {
           </div>
         )}
       </div>
-
-      {/* Chat Popup (legacy - for ride matches) */}
-      {matchedRider && (
-        <ChatPopup
-          isOpen={isChatOpen}
-          onClose={handleCloseChat}
-          matchedRider={{
-            displayName: matchedRider.displayName,
-            photoURL: matchedRider.photoURL,
-          }}
-          myLocation={userLocation}
-          theirLocation={matchedRider.location}
-          onLocationShare={handleLocationShare}
-          onViewLocation={handleViewLocation}
-        />
-      )}
 
       {/* ============================================
           Nearby People Feature Components
