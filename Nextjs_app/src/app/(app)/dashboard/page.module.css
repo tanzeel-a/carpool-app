@@ -359,25 +359,6 @@
   justify-content: center;
 }
 
-.demoBtn {
-  padding: 10px 20px;
-  border: 2px dashed var(--gold);
-  border-radius: 999px;
-  background: rgba(212, 175, 55, 0.1);
-  font-size: 11px;
-  text-transform: uppercase;
-  letter-spacing: 0.08em;
-  color: var(--gold);
-  cursor: pointer;
-  font-family: inherit;
-  transition: all 0.2s ease;
-}
-
-.demoBtn:hover {
-  background: rgba(212, 175, 55, 0.2);
-  border-style: solid;
-}
-
 .cancelBtn {
   padding: 10px 24px;
   border: 1px solid rgba(17, 16, 14, 0.15);
@@ -395,71 +376,6 @@
 .cancelBtn:hover {
   border-color: #dc2626;
   color: #dc2626;
-}
-
-/* Simulate Nearby People Button */
-.simulatePeopleBtn {
-  position: absolute;
-  bottom: 100px;
-  left: 50%;
-  transform: translateX(-50%);
-  z-index: 20;
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  padding: 12px 20px;
-  border: 2px dashed #4ECDC4;
-  border-radius: 999px;
-  background: rgba(78, 205, 196, 0.15);
-  font-size: 12px;
-  font-weight: 500;
-  color: #3BA99C;
-  cursor: pointer;
-  font-family: inherit;
-  transition: all 0.2s ease;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-}
-
-.simulatePeopleBtn svg {
-  width: 18px;
-  height: 18px;
-}
-
-.simulatePeopleBtn:hover {
-  background: rgba(78, 205, 196, 0.25);
-  border-style: solid;
-  transform: translateX(-50%) translateY(-2px);
-  box-shadow: 0 6px 16px rgba(78, 205, 196, 0.3);
-}
-
-.simulatePeopleBtn:disabled {
-  opacity: 0.5;
-  cursor: not-allowed;
-}
-
-/* Cleanup Demo Button */
-.cleanupDemoBtn {
-  position: absolute;
-  bottom: 100px;
-  left: 50%;
-  transform: translateX(-50%);
-  z-index: 20;
-  padding: 10px 20px;
-  border: 1px solid rgba(239, 68, 68, 0.3);
-  border-radius: 999px;
-  background: rgba(239, 68, 68, 0.1);
-  font-size: 11px;
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
-  color: #dc2626;
-  cursor: pointer;
-  font-family: inherit;
-  transition: all 0.2s ease;
-}
-
-.cleanupDemoBtn:hover {
-  background: rgba(239, 68, 68, 0.2);
-  border-color: #dc2626;
 }
 
 /* Nearby People Indicator */
@@ -652,7 +568,6 @@
     gap: 8px;
   }
 
-  .demoBtn,
   .cancelBtn {
     padding: 10px 16px;
     font-size: 11px;

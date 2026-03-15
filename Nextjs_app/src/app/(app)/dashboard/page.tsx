@@ -35,7 +35,6 @@ import {
   addDoc,
   updateDoc,
   doc,
-  deleteDoc,
   Timestamp,
   GeoPoint,
 } from 'firebase/firestore';
@@ -46,13 +45,6 @@ import styles from './page.module.css';
 // Constants
 const RIDE_EXPIRY_MINUTES = 10;
 
-// Demo rider data
-const DEMO_RIDERS = [
-  { name: 'Priya Sharma', photo: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Priya' },
-  { name: 'Rahul Verma', photo: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Rahul' },
-  { name: 'Ananya Singh', photo: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Ananya' },
-];
-
 export default function DashboardPage() {
   const { user, signOut } = useAuth();
   const [userLocation, setUserLocation] = useState<{ lat: number; lng: number } | null>(null);
@@ -61,8 +53,6 @@ export default function DashboardPage() {
   const [nearbyRides, setNearbyRides] = useState<Ride[]>([]);
   const [isSearching, setIsSearching] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [demoRideId, setDemoRideId] = useState<string | null>(null);
-  const [isDemoMode, setIsDemoMode] = useState(false);
   const [searchRadius, setSearchRadius] = useState(500); // in meters (500m default for nearby people)
 
   // Chat and matched rider state
@@ -93,10 +83,6 @@ export default function DashboardPage() {
   } | null>(null);
   const [groupRide, setGroupRide] = useState<GroupRide | null>(null);
   const [matchRequestLoading, setMatchRequestLoading] = useState(false);
-
-  // Demo nearby people state
-  const [demoPresenceIds, setDemoPresenceIds] = useState<string[]>([]);
-  const [isDemoPeopleMode, setIsDemoPeopleMode] = useState(false);
 
   // ============================================
   // Nearby People Hooks
@@ -321,100 +307,6 @@ export default function DashboardPage() {
     setGroupRide(null);
   }, []);
 
-  // Create 3 simulated nearby people going to the same destination
-  const createDemoNearbyPeople = useCallback(async () => {
-    if (!userLocation || !destination || !db) return;
-
-    setIsDemoPeopleMode(true);
-    const firestore = db;
-    const createdIds: string[] = [];
-
-    // 3 demo people with different positions around the user
-    const demoPeople = [
-      {
-        name: 'Priya Sharma',
-        photo: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Priya',
-        offsetLat: 0.0003,  // ~30m north
-        offsetLng: 0.0002,
-      },
-      {
-        name: 'Rahul Verma',
-        photo: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Rahul',
-        offsetLat: -0.0002, // ~20m south
-        offsetLng: 0.0004,  // ~40m east
-      },
-      {
-        name: 'Ananya Singh',
-        photo: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Ananya',
-        offsetLat: 0.0001,
-        offsetLng: -0.0003, // ~30m west
-      },
-    ];
-
-    for (const person of demoPeople) {
-      const personLocation = {
-        lat: userLocation.lat + person.offsetLat,
-        lng: userLocation.lng + person.offsetLng,
-      };
-
-      const geohash = geohashForLocation([personLocation.lat, personLocation.lng]);
-      const personId = `demo-${person.name.replace(/\s/g, '-').toLowerCase()}-${Date.now()}`;
-
-      try {
-        await addDoc(collection(firestore, 'userPresence'), {
-          uid: personId,
-          displayName: person.name,
-          photoURL: person.photo,
-          location: new GeoPoint(personLocation.lat, personLocation.lng),
-          geohash,
-          lastUpdated: Timestamp.now(),
-          isOnline: true,
-          isSearching: true,
-          broadcast: {
-            message: `Heading to ${destination.address.split(',')[0]}`,
-            originAddress: 'Nearby Location',
-            destinationAddress: destination.address,
-            destination,
-          },
-        });
-
-        // Store the document path for cleanup (we need to query by uid)
-        createdIds.push(personId);
-      } catch (err) {
-        console.error('Error creating demo person:', err);
-      }
-    }
-
-    setDemoPresenceIds(createdIds);
-  }, [userLocation, destination]);
-
-  // Clean up demo nearby people
-  const cleanupDemoNearbyPeople = useCallback(async () => {
-    if (!db || demoPresenceIds.length === 0) return;
-
-    const firestore = db;
-
-    for (const personUid of demoPresenceIds) {
-      try {
-        // Query for the document with this uid
-        const q = query(
-          collection(firestore, 'userPresence'),
-          where('uid', '==', personUid)
-        );
-        const snapshot = await import('firebase/firestore').then(m => m.getDocs(q));
-
-        for (const docSnap of snapshot.docs) {
-          await deleteDoc(doc(firestore, 'userPresence', docSnap.id));
-        }
-      } catch (err) {
-        console.error('Error cleaning up demo person:', err);
-      }
-    }
-
-    setDemoPresenceIds([]);
-    setIsDemoPeopleMode(false);
-  }, [demoPresenceIds]);
-
   // Get user location on mount
   useEffect(() => {
     if (typeof window === 'undefined' || !navigator.geolocation) {
@@ -545,63 +437,6 @@ export default function DashboardPage() {
     setDestination(location);
   }, []);
 
-  // Create a demo rider nearby for testing
-  const createDemoRider = useCallback(async () => {
-    if (!userLocation || !destination || !db) return;
-
-    const demoRider = DEMO_RIDERS[Math.floor(Math.random() * DEMO_RIDERS.length)];
-
-    // Create a position ~50m away (within 100m radius)
-    const offsetLat = (Math.random() - 0.5) * 0.0008; // ~50m
-    const offsetLng = (Math.random() - 0.5) * 0.0008;
-    const demoLocation = {
-      lat: userLocation.lat + offsetLat,
-      lng: userLocation.lng + offsetLng,
-    };
-
-    const geohash = geohashForLocation([demoLocation.lat, demoLocation.lng]);
-    const now = new Date();
-    const expiresAt = new Date(now.getTime() + RIDE_EXPIRY_MINUTES * 60 * 1000);
-
-    try {
-      const demoRideData = {
-        uid: 'demo-user-' + Date.now(),
-        displayName: demoRider.name,
-        photoURL: demoRider.photo,
-        origin: new GeoPoint(demoLocation.lat, demoLocation.lng),
-        originAddress: 'Nearby Location',
-        destination: {
-          lat: destination.lat + 0.001,
-          lng: destination.lng + 0.001,
-          address: destination.address,
-        },
-        geohash,
-        status: 'searching',
-        createdAt: Timestamp.fromDate(now),
-        expiresAt: Timestamp.fromDate(expiresAt),
-      };
-
-      const docRef = await addDoc(collection(db, 'rides'), demoRideData);
-      setDemoRideId(docRef.id);
-      setIsDemoMode(true);
-    } catch (err) {
-      console.error('Error creating demo rider:', err);
-    }
-  }, [userLocation, destination]);
-
-  // Clean up demo rider
-  const cleanupDemoRider = useCallback(async () => {
-    if (!demoRideId || !db) return;
-
-    try {
-      await deleteDoc(doc(db, 'rides', demoRideId));
-      setDemoRideId(null);
-      setIsDemoMode(false);
-    } catch (err) {
-      console.error('Error cleaning up demo rider:', err);
-    }
-  }, [demoRideId]);
-
   // Handle match acceptance
   const handleAcceptMatch = async (ride: Ride) => {
     if (!currentRide?.id || !ride.id || !db) return;
@@ -642,12 +477,6 @@ export default function DashboardPage() {
       });
       matchedRiderLocationRef.current = riderLocation;
 
-      // Clean up demo rider if it was a demo match
-      if (demoRideId) {
-        setDemoRideId(null);
-        setIsDemoMode(false);
-      }
-
       setCurrentRide(null);
       setNearbyRides([]);
       setIsSearching(false);
@@ -659,28 +488,6 @@ export default function DashboardPage() {
       setError('Failed to confirm match. Please try again.');
     }
   };
-
-  // Simulate matched rider moving closer (for demo)
-  useEffect(() => {
-    if (!matchedRider || !userLocation || !isChatOpen) return;
-
-    const interval = setInterval(() => {
-      if (matchedRiderLocationRef.current && userLocation) {
-        const current = matchedRiderLocationRef.current;
-        // Move 10% closer to user each tick
-        const newLat = current.lat + (userLocation.lat - current.lat) * 0.1;
-        const newLng = current.lng + (userLocation.lng - current.lng) * 0.1;
-
-        matchedRiderLocationRef.current = { lat: newLat, lng: newLng };
-        setMatchedRider(prev => prev ? {
-          ...prev,
-          location: { lat: newLat, lng: newLng },
-        } : null);
-      }
-    }, 3000); // Update every 3 seconds
-
-    return () => clearInterval(interval);
-  }, [matchedRider, userLocation, isChatOpen]);
 
   // Close chat and reset
   const handleCloseChat = () => {
@@ -853,48 +660,13 @@ export default function DashboardPage() {
           </button>
         )}
 
-        {/* Simulate Nearby People Button */}
-        {destination && nearbyPeople.length === 0 && !isDemoPeopleMode && (
-          <button
-            className={styles.simulatePeopleBtn}
-            onClick={createDemoNearbyPeople}
-            disabled={!userLocation}
-          >
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-              <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" />
-              <circle cx="9" cy="7" r="4" />
-              <path d="M23 21v-2a4 4 0 0 0-3-3.87" />
-              <path d="M16 3.13a4 4 0 0 1 0 7.75" />
-            </svg>
-            Simulate 3 Nearby People
-          </button>
-        )}
-
-        {/* Clean up demo people button */}
-        {isDemoPeopleMode && (
-          <button
-            className={styles.cleanupDemoBtn}
-            onClick={cleanupDemoNearbyPeople}
-          >
-            Clear Demo People
-          </button>
-        )}
-
         {/* Searching State */}
         {isSearching && (
           <div className={styles.searchingBanner}>
             <div className={styles.pulseRing} />
             <p>Looking for riders nearby...</p>
             <div className={styles.searchingActions}>
-              {!isDemoMode && nearbyRides.length === 0 && (
-                <button onClick={createDemoRider} className={styles.demoBtn}>
-                  Simulate Nearby Rider
-                </button>
-              )}
-              <button onClick={async () => {
-                await cleanupDemoRider();
-                handleCancelRide();
-              }} className={styles.cancelBtn}>
+              <button onClick={handleCancelRide} className={styles.cancelBtn}>
                 Cancel
               </button>
             </div>
