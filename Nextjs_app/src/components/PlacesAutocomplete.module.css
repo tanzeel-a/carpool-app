@@ -330,7 +330,21 @@
     min-width: 160px;
     max-width: calc(100vw - 40px);
     border-radius: 18px;
-    top: calc(100% + 10px);
+    /* Pop up to the top since search bar is at bottom */
+    top: auto;
+    bottom: calc(100% + 10px);
+    animation: dropdownFadeUp 0.15s ease-out;
+  }
+
+  @keyframes dropdownFadeUp {
+    from {
+      opacity: 0;
+      transform: translateY(8px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
   }
 
   .radiusHeader {
@@ -344,11 +358,15 @@
     border-radius: 12px;
   }
 
-  /* Google Places dropdown */
+  /* Google Places dropdown - opens upward on mobile */
   :global(.pac-container) {
-    margin-top: 10px;
+    margin-top: 0;
+    margin-bottom: 10px;
     border-radius: 18px;
-    box-shadow: 0 4px 24px rgba(0, 0, 0, 0.15);
+    box-shadow: 0 -4px 24px rgba(0, 0, 0, 0.15);
+    /* Position above the input */
+    top: auto !important;
+    bottom: 60px !important;
   }
 
   :global(.pac-item) {
@@ -395,6 +413,8 @@
   .radiusDropdown {
     min-width: 140px;
     border-radius: 16px;
+    top: auto;
+    bottom: calc(100% + 8px);
   }
 
   .radiusOption {

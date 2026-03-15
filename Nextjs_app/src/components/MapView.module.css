@@ -302,19 +302,20 @@
 /* Tablet adjustments */
 @media (max-width: 768px) {
   .mapControls {
-    right: 12px;
-    bottom: 140px;
+    left: 12px;
+    right: auto;
+    bottom: 100px;
   }
 
   .controlBtn {
-    width: 48px;
-    height: 48px;
-    border-radius: 12px;
+    width: 40px;
+    height: 40px;
+    border-radius: 10px;
   }
 
   .controlBtn svg {
-    width: 20px;
-    height: 20px;
+    width: 18px;
+    height: 18px;
   }
 
   .markerLabel {
@@ -331,20 +332,21 @@
 /* Mobile adjustments */
 @media (max-width: 480px) {
   .mapControls {
-    right: 10px;
-    bottom: 160px;
+    left: 10px;
+    right: auto;
+    bottom: 90px;
     gap: 6px;
   }
 
   .controlBtn {
-    width: 48px;
-    height: 48px;
+    width: 36px;
+    height: 36px;
     border-radius: 10px;
   }
 
   .controlBtn svg {
-    width: 20px;
-    height: 20px;
+    width: 16px;
+    height: 16px;
   }
 
   .markerLabel {
@@ -373,14 +375,20 @@
 /* Extra small phones */
 @media (max-width: 360px) {
   .mapControls {
-    right: 8px;
-    bottom: 150px;
+    left: 8px;
+    right: auto;
+    bottom: 80px;
     gap: 4px;
   }
 
   .controlBtn {
-    width: 44px;
-    height: 44px;
+    width: 34px;
+    height: 34px;
+  }
+
+  .controlBtn svg {
+    width: 14px;
+    height: 14px;
   }
 }
 
@@ -388,7 +396,8 @@
 @media (max-height: 500px) and (orientation: landscape) {
   .mapControls {
     bottom: 80px;
-    right: 8px;
+    left: 8px;
+    right: auto;
     flex-direction: row;
   }
 }
