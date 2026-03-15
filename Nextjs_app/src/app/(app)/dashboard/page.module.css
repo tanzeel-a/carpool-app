@@ -149,8 +149,8 @@
   left: 50%;
   transform: translateX(-50%);
   width: 100%;
-  max-width: 400px;
-  padding: 0 24px;
+  max-width: 280px;
+  padding: 0 16px;
 }
 
 .userInfo {
@@ -489,7 +489,7 @@
   .headerSearch {
     position: static;
     transform: none;
-    max-width: 400px;
+    max-width: 260px;
     padding: 0;
     flex: 1;
     margin: 0 56px;
