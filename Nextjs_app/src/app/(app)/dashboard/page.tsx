@@ -5,9 +5,8 @@
  *
  * Main app view with:
  * - Google Maps showing user location
- * - Find Ride button to create ride request
- * - Destination search
- * - Match display when riders found
+ * - Destination search with nearby people matching
+ * - Real-time match requests and chat
  */
 
 import { useState, useCallback, useEffect, useRef } from 'react';
