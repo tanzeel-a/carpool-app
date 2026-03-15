@@ -74,7 +74,11 @@ export function useNearbyPeople(options: UseNearbyPeopleOptions) {
       return;
     }
 
-    console.log('[NearbyPeople] Starting real-time query for nearby users...');
+    console.log('[NearbyPeople] Starting real-time query:', {
+      location: userLocation,
+      radius,
+      userId: user.uid,
+    });
 
     const firestore = db;
 
@@ -86,6 +90,8 @@ export function useNearbyPeople(options: UseNearbyPeopleOptions) {
       [userLocation.lat, userLocation.lng],
       radius
     );
+
+    console.log('[NearbyPeople] Geohash bounds:', bounds);
 
     const unsubscribes: (() => void)[] = [];
     const peopleMap = new Map<string, NearbyPerson>();

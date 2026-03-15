@@ -180,19 +180,22 @@ export function useUserPresence(options: UseUserPresenceOptions = {}) {
 
     let isFirstUpdate = true;
 
+    console.log('[Presence] Starting geolocation watch...');
+
     watchIdRef.current = navigator.geolocation.watchPosition(
       (position) => {
         const newLocation = {
           lat: position.coords.latitude,
           lng: position.coords.longitude,
         };
+        console.log('[Presence] Got location:', newLocation);
         setLocation(newLocation);
         // Force update on first location to ensure presence is created
         updatePresence(newLocation, isFirstUpdate);
         isFirstUpdate = false;
       },
       (err) => {
-        console.error('Geolocation error:', err);
+        console.error('[Presence] Geolocation error:', err.code, err.message);
         setError('Unable to get location');
       },
       {
