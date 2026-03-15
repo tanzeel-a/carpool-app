@@ -286,48 +286,125 @@
   }
 }
 
+/* Tablet Responsive */
+@media (max-width: 768px) {
+  .container {
+    top: calc(env(safe-area-inset-top) + 76px);
+    right: 12px;
+    max-width: 360px;
+  }
+}
+
 /* Mobile Responsive */
 @media (max-width: 480px) {
   .container {
-    top: calc(env(safe-area-inset-top) + 70px);
-    right: 12px;
-    left: 12px;
+    top: calc(env(safe-area-inset-top) + 128px);
+    right: 10px;
+    left: 10px;
     width: auto;
     max-width: none;
   }
 
   .toast {
-    border-radius: 14px;
+    border-radius: 18px;
+    box-shadow:
+      0 8px 32px rgba(0, 0, 0, 0.15),
+      0 0 0 1px rgba(17, 16, 14, 0.06);
+  }
+
+  .closeBtn {
+    width: 32px;
+    height: 32px;
+    top: 10px;
+    right: 10px;
+  }
+
+  .closeBtn svg {
+    width: 16px;
+    height: 16px;
   }
 
   .content {
-    padding: 14px;
-    padding-right: 36px;
+    padding: 16px;
+    padding-right: 44px;
+    gap: 14px;
   }
 
   .avatar img,
   .avatarPlaceholder {
-    width: 46px;
-    height: 46px;
+    width: 52px;
+    height: 52px;
   }
 
   .title {
-    font-size: 13px;
+    font-size: 15px;
+    margin-bottom: 4px;
   }
 
   .message {
-    font-size: 12px;
+    font-size: 14px;
   }
 
   .actions {
-    padding: 0 14px 14px;
-    gap: 6px;
+    padding: 0 16px 16px;
+    gap: 10px;
   }
 
   .declineBtn,
   .acceptBtn {
-    padding: 10px 14px;
-    font-size: 12px;
-    border-radius: 10px;
+    padding: 14px 18px;
+    font-size: 14px;
+    border-radius: 14px;
+    min-height: 50px;
+  }
+
+  .acceptBtn:active {
+    transform: scale(0.98);
+  }
+}
+
+/* Extra small phones */
+@media (max-width: 360px) {
+  .container {
+    top: calc(env(safe-area-inset-top) + 116px);
+    left: 8px;
+    right: 8px;
+  }
+
+  .toast {
+    border-radius: 16px;
+  }
+
+  .content {
+    padding: 14px;
+    padding-right: 40px;
+    gap: 12px;
+  }
+
+  .avatar img,
+  .avatarPlaceholder {
+    width: 48px;
+    height: 48px;
+  }
+
+  .title {
+    font-size: 14px;
+  }
+
+  .message {
+    font-size: 13px;
+  }
+
+  .actions {
+    padding: 0 14px 14px;
+    gap: 8px;
+  }
+
+  .declineBtn,
+  .acceptBtn {
+    padding: 12px 14px;
+    font-size: 13px;
+    min-height: 46px;
+    border-radius: 12px;
   }
 }

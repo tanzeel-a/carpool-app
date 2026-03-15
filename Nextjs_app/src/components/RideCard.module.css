@@ -111,25 +111,97 @@
   transform: translateY(0);
 }
 
-/* Responsive */
+/* Responsive - Tablet */
+@media (max-width: 768px) {
+  .card {
+    padding: 18px;
+    gap: 14px;
+    border-radius: 18px;
+  }
+}
+
+/* Responsive - Mobile */
 @media (max-width: 480px) {
   .card {
     padding: 16px;
-    gap: 12px;
+    gap: 14px;
+    border-radius: 16px;
+    background: rgba(255, 255, 255, 0.95);
+  }
+
+  .profile {
+    gap: 14px;
   }
 
   .avatar,
   .avatarPlaceholder {
-    width: 40px;
-    height: 40px;
+    width: 48px;
+    height: 48px;
+  }
+
+  .avatarPlaceholder {
+    font-size: 18px;
+  }
+
+  .name {
+    font-size: 15px;
+  }
+
+  .time {
+    font-size: 13px;
+  }
+
+  .destination {
+    padding: 14px 16px;
+    border-radius: 14px;
+  }
+
+  .label {
+    font-size: 11px;
+    margin-bottom: 2px;
+  }
+
+  .address {
+    font-size: 15px;
+  }
+
+  .acceptBtn {
+    padding: 16px 24px;
+    font-size: 13px;
+    min-height: 52px;
+    border-radius: 14px;
+  }
+
+  .acceptBtn:active {
+    transform: scale(0.98);
+  }
+}
+
+/* Extra small phones */
+@media (max-width: 360px) {
+  .card {
+    padding: 14px;
+    gap: 12px;
+    border-radius: 14px;
+  }
+
+  .avatar,
+  .avatarPlaceholder {
+    width: 44px;
+    height: 44px;
   }
 
   .name {
     font-size: 14px;
   }
 
+  .destination {
+    padding: 12px 14px;
+  }
+
   .acceptBtn {
-    padding: 12px 20px;
+    padding: 14px 20px;
+    min-height: 48px;
     font-size: 12px;
   }
 }

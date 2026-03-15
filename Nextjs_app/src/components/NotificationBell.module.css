@@ -282,14 +282,71 @@
   margin-top: 6px;
 }
 
+/* Tablet Responsive */
+@media (max-width: 768px) {
+  .bellButton {
+    width: 100%;
+    height: 100%;
+    background: transparent;
+    box-shadow: none;
+  }
+
+  .bellButton:hover {
+    background: transparent;
+    box-shadow: none;
+  }
+
+  .dropdown {
+    position: fixed;
+    top: calc(env(safe-area-inset-top) + 64px);
+    right: 12px;
+    width: 320px;
+    max-height: calc(100vh - 140px);
+  }
+}
+
 /* Mobile Responsive */
 @media (max-width: 480px) {
   .dropdown {
     position: fixed;
-    top: 60px;
-    right: 12px;
-    left: 12px;
+    top: calc(env(safe-area-inset-top) + 60px);
+    right: 10px;
+    left: 10px;
     width: auto;
-    max-height: calc(100vh - 120px);
+    max-height: calc(100vh - 140px);
+    border-radius: 20px;
+  }
+
+  .dropdownHeader {
+    padding: 14px 16px;
+  }
+
+  .notificationItem {
+    padding: 14px 16px;
+    min-height: 72px;
+  }
+
+  .notificationAvatar img,
+  .avatarPlaceholder {
+    width: 48px;
+    height: 48px;
+  }
+
+  .notificationTitle {
+    font-size: 14px;
+  }
+
+  .notificationMessage {
+    font-size: 13px;
+  }
+}
+
+/* Extra small phones */
+@media (max-width: 360px) {
+  .dropdown {
+    top: calc(env(safe-area-inset-top) + 54px);
+    left: 8px;
+    right: 8px;
+    border-radius: 18px;
   }
 }
