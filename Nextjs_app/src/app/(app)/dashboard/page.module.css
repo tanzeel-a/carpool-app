@@ -484,12 +484,13 @@
     z-index: 110;
   }
 
-  /* Floating search bar - centered below buttons */
+  /* Search bar - bottom of screen */
   .headerSearch {
     position: fixed;
-    top: calc(env(safe-area-inset-top) + 12px);
-    left: 72px;
-    right: 72px;
+    top: auto;
+    bottom: max(env(safe-area-inset-bottom) + 16px, 24px);
+    left: 16px;
+    right: 16px;
     transform: none;
     max-width: none;
     width: auto;
@@ -497,9 +498,9 @@
     z-index: 100;
   }
 
-  /* Nearby indicator repositioned */
+  /* Nearby indicator - top center */
   .nearbyIndicator {
-    top: calc(env(safe-area-inset-top) + 76px);
+    top: calc(env(safe-area-inset-top) + 12px);
     padding: 8px 14px;
     font-size: 12px;
   }
@@ -508,9 +509,9 @@
     display: none;
   }
 
-  /* Error banner below search */
+  /* Error banner - top center */
   .errorBanner {
-    top: calc(env(safe-area-inset-top) + 76px);
+    top: calc(env(safe-area-inset-top) + 12px);
     padding: 10px 16px;
     font-size: 12px;
   }
@@ -563,16 +564,17 @@
     height: 44px;
   }
 
-  /* Search bar - full width below floating buttons */
+  /* Search bar - bottom of screen */
   .headerSearch {
-    top: calc(env(safe-area-inset-top) + 64px);
-    left: 10px;
-    right: 10px;
+    top: auto;
+    bottom: max(env(safe-area-inset-bottom) + 12px, 20px);
+    left: 12px;
+    right: 12px;
   }
 
-  /* Nearby indicator */
+  /* Nearby indicator - top center */
   .nearbyIndicator {
-    top: calc(env(safe-area-inset-top) + 128px);
+    top: calc(env(safe-area-inset-top) + 12px);
     padding: 8px 12px;
     font-size: 12px;
     gap: 6px;
@@ -669,13 +671,14 @@
   }
 
   .headerSearch {
-    top: calc(env(safe-area-inset-top) + 56px);
+    top: auto;
+    bottom: max(env(safe-area-inset-bottom) + 10px, 16px);
     left: 8px;
     right: 8px;
   }
 
   .nearbyIndicator {
-    top: calc(env(safe-area-inset-top) + 116px);
+    top: calc(env(safe-area-inset-top) + 10px);
     font-size: 11px;
   }
 
