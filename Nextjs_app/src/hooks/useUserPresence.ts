@@ -114,26 +114,34 @@ export function useUserPresence(options: UseUserPresenceOptions = {}) {
 
   // Set broadcast message
   const setBroadcastMessage = useCallback(async (data: BroadcastData | null) => {
+    console.log('[Presence] Setting broadcast message:', data);
     setBroadcast(data);
-    if (location) {
-      // Force update to reflect broadcast change immediately
-      setTimeout(async () => {
-        if (location && user && db && presenceDocId) {
-          try {
-            const presenceRef = doc(db, 'userPresence', presenceDocId);
-            if (data) {
-              await updateDoc(presenceRef, { broadcast: data });
-            } else {
-              // Remove broadcast field
-              await updateDoc(presenceRef, { broadcast: null });
-            }
-          } catch (err) {
-            console.error('Error updating broadcast:', err);
-          }
+
+    // Force update to reflect broadcast change immediately
+    // Use setDoc with merge to ensure document is created if it doesn't exist
+    if (user && db && presenceDocId) {
+      try {
+        const presenceRef = doc(db, 'userPresence', presenceDocId);
+        if (data) {
+          // Use setDoc with merge to create or update
+          await setDoc(presenceRef, { broadcast: data }, { merge: true });
+          console.log('[Presence] Broadcast saved to Firestore:', data.destination);
+        } else {
+          // Use setDoc with merge to update (set broadcast to null)
+          await setDoc(presenceRef, { broadcast: null }, { merge: true });
+          console.log('[Presence] Broadcast cleared');
         }
-      }, 0);
+      } catch (err) {
+        console.error('[Presence] Error updating broadcast:', err);
+      }
+    } else {
+      console.log('[Presence] Skipped broadcast save - missing:', {
+        user: !!user,
+        db: !!db,
+        presenceDocId
+      });
     }
-  }, [location, user, presenceDocId]);
+  }, [user, presenceDocId]);
 
   // Go offline
   const goOffline = useCallback(async () => {
