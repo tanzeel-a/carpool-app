@@ -1,7 +1,7 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
-import { motion, useInView, animate } from "framer-motion";
+import { useEffect, useState } from "react";
+import { motion } from "framer-motion";
 import styles from "./AnimatedStats.module.css";
 
 interface StatItem {
@@ -30,51 +30,42 @@ const statSets: StatItem[][] = [
     { value: 4, suffix: "x", label: "less emissions" },
     { value: 200, suffix: "m", label: "match radius" },
   ],
-  // Mixed metrics set 1
-  [
-    { value: 60, suffix: "%", label: "savings" },
-    { value: 3, suffix: "x", label: "greener travel" },
-    { value: 50, suffix: "m", label: "instant match" },
-  ],
-  // Mixed metrics set 2
-  [
-    { value: 80, suffix: "%", label: "cost cut" },
-    { value: 5, suffix: "x", label: "eco friendly" },
-    { value: 250, suffix: "m", label: "search area" },
-  ],
 ];
 
-function AnimatedNumber({
-  value,
-  suffix,
-  shouldAnimate,
-}: {
-  value: number;
-  suffix: string;
-  shouldAnimate: boolean;
-}) {
-  const [displayValue, setDisplayValue] = useState(0);
-  const hasAnimated = useRef(false);
+// Simple counter hook
+function useCounter(target: number, duration: number = 2000) {
+  const [count, setCount] = useState(0);
 
   useEffect(() => {
-    if (shouldAnimate && !hasAnimated.current) {
-      hasAnimated.current = true;
+    let startTime: number;
+    let animationFrame: number;
 
-      const controls = animate(0, value, {
-        duration: 2.5,
-        ease: [0.25, 0.1, 0.25, 1],
-        onUpdate: (latest) => {
-          setDisplayValue(Math.round(latest));
-        },
-      });
+    const animate = (timestamp: number) => {
+      if (!startTime) startTime = timestamp;
+      const progress = Math.min((timestamp - startTime) / duration, 1);
 
-      return () => controls.stop();
-    }
-  }, [shouldAnimate, value]);
+      // Ease out cubic
+      const eased = 1 - Math.pow(1 - progress, 3);
+      setCount(Math.round(eased * target));
+
+      if (progress < 1) {
+        animationFrame = requestAnimationFrame(animate);
+      }
+    };
+
+    animationFrame = requestAnimationFrame(animate);
+    return () => cancelAnimationFrame(animationFrame);
+  }, [target, duration]);
+
+  return count;
+}
+
+function StatNumber({ value, suffix }: { value: number; suffix: string }) {
+  const count = useCounter(value);
 
   return (
     <span className={styles.value}>
-      {displayValue}
+      {count}
       <span className={styles.suffix}>{suffix}</span>
     </span>
   );
@@ -85,13 +76,11 @@ interface AnimatedStatsProps {
 }
 
 export default function AnimatedStats({ variant = "dark" }: AnimatedStatsProps) {
-  const ref = useRef<HTMLDivElement>(null);
-  const isInView = useInView(ref, { once: true, amount: 0.5 });
-
-  const [stats, setStats] = useState<StatItem[] | null>(null);
+  const [stats, setStats] = useState<StatItem[]>(statSets[0]);
+  const [isClient, setIsClient] = useState(false);
 
   useEffect(() => {
-    // Randomize stats only on client to avoid hydration mismatch
+    setIsClient(true);
     const randomIndex = Math.floor(Math.random() * statSets.length);
     setStats(statSets[randomIndex]);
   }, []);
@@ -100,50 +89,49 @@ export default function AnimatedStats({ variant = "dark" }: AnimatedStatsProps) 
     ? `${styles.container} ${styles.containerLight}`
     : styles.container;
 
-  // Render skeleton loading state during SSR to maintain layout
-  if (!stats) {
-    return (
-      <div ref={ref} className={containerClass}>
-        {[0, 1, 2].map((i) => (
-          <div key={i} className={styles.stat}>
-            <span className={`${styles.value} ${styles.skeleton}`}>
-              <span className={styles.shimmer}>--</span>
-              <span className={styles.suffix}>%</span>
-            </span>
-            <span className={`${styles.label} ${styles.skeleton}`}>
-              <span className={styles.shimmer}>loading...</span>
-            </span>
-          </div>
-        ))}
-      </div>
-    );
-  }
+  // Container animation
+  const containerVariants = {
+    hidden: { opacity: 0 },
+    visible: {
+      opacity: 1,
+      transition: {
+        staggerChildren: 0.15,
+        delayChildren: 0.1,
+      },
+    },
+  };
+
+  // Individual stat animation
+  const statVariants = {
+    hidden: { opacity: 0, y: 20 },
+    visible: {
+      opacity: 1,
+      y: 0,
+      transition: { duration: 0.5, ease: [0, 0, 0.2, 1] as const },
+    },
+  };
 
   return (
     <motion.div
-      ref={ref}
       className={containerClass}
-      initial={{ opacity: 0, y: 20 }}
-      animate={isInView ? { opacity: 1, y: 0 } : { opacity: 0, y: 20 }}
-      transition={{ duration: 0.7, ease: "easeOut" }}
+      variants={containerVariants}
+      initial="hidden"
+      animate="visible"
     >
       {stats.map((stat, index) => (
         <motion.div
           key={`${stat.label}-${index}`}
           className={styles.stat}
-          initial={{ opacity: 0, y: 15 }}
-          animate={isInView ? { opacity: 1, y: 0 } : { opacity: 0, y: 15 }}
-          transition={{
-            duration: 0.6,
-            delay: 0.2 + index * 0.2,
-            ease: "easeOut",
-          }}
+          variants={statVariants}
         >
-          <AnimatedNumber
-            value={stat.value}
-            suffix={stat.suffix}
-            shouldAnimate={isInView}
-          />
+          {isClient ? (
+            <StatNumber value={stat.value} suffix={stat.suffix} />
+          ) : (
+            <span className={styles.value}>
+              {stat.value}
+              <span className={styles.suffix}>{stat.suffix}</span>
+            </span>
+          )}
           <span className={styles.label}>{stat.label}</span>
         </motion.div>
       ))}
