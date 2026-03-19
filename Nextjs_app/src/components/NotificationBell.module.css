@@ -340,8 +340,8 @@
 
   .dropdown {
     position: fixed;
-    top: calc(env(safe-area-inset-top) + 64px);
-    right: 12px;
+    top: calc(env(safe-area-inset-top) + 60px);
+    right: 10px;
     width: 320px;
     max-height: calc(100vh - 140px);
   }

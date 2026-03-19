@@ -468,14 +468,14 @@
     display: none;
   }
 
-  /* Floating notification bell - top right */
+  /* Floating notification bell - top right, moved up and left */
   .mobileNotificationBell {
     display: flex;
     align-items: center;
     justify-content: center;
     position: fixed;
-    top: calc(env(safe-area-inset-top) + 12px);
-    right: 12px;
+    top: calc(env(safe-area-inset-top) + 8px);
+    right: 60px;
     width: 48px;
     height: 48px;
     background: #ffffff;
@@ -556,10 +556,10 @@
     height: 20px;
   }
 
-  /* Floating notification */
+  /* Floating notification - moved up and left */
   .mobileNotificationBell {
-    top: calc(env(safe-area-inset-top) + 10px);
-    right: 10px;
+    top: calc(env(safe-area-inset-top) + 6px);
+    right: 56px;
     width: 44px;
     height: 44px;
   }
@@ -664,8 +664,8 @@
   }
 
   .mobileNotificationBell {
-    top: calc(env(safe-area-inset-top) + 8px);
-    right: 8px;
+    top: calc(env(safe-area-inset-top) + 6px);
+    right: 52px;
     width: 40px;
     height: 40px;
   }
@@ -743,7 +743,8 @@
   }
 
   .mobileNotificationBell {
-    top: calc(env(safe-area-inset-top) + 8px);
+    top: calc(env(safe-area-inset-top) + 6px);
+    right: 52px;
     width: 40px;
     height: 40px;
   }
@@ -751,7 +752,7 @@
   .headerSearch {
     top: calc(env(safe-area-inset-top) + 8px);
     left: 56px;
-    right: 56px;
+    right: 100px;
   }
 
   .searchingBanner {
