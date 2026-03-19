@@ -173,8 +173,8 @@ export default function Home() {
         <div className={styles.footerBottom}>
           <span>© 2026 Carpool. All rights reserved.</span>
           <div className={styles.footerLinks}>
-            <a href="#">Privacy</a>
-            <a href="#">Terms</a>
+            <a href="/privacy">Privacy</a>
+            <a href="/terms">Terms</a>
           </div>
         </div>
 
