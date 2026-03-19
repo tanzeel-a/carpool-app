@@ -100,16 +100,19 @@ export default function AnimatedStats({ variant = "dark" }: AnimatedStatsProps) 
     ? `${styles.container} ${styles.containerLight}`
     : styles.container;
 
-  // Render placeholder during SSR to maintain layout
+  // Render skeleton loading state during SSR to maintain layout
   if (!stats) {
     return (
       <div ref={ref} className={containerClass}>
         {[0, 1, 2].map((i) => (
           <div key={i} className={styles.stat}>
-            <span className={styles.value}>
-              0<span className={styles.suffix}>%</span>
+            <span className={`${styles.value} ${styles.skeleton}`}>
+              <span className={styles.shimmer}>--</span>
+              <span className={styles.suffix}>%</span>
             </span>
-            <span className={styles.label}>&nbsp;</span>
+            <span className={`${styles.label} ${styles.skeleton}`}>
+              <span className={styles.shimmer}>loading...</span>
+            </span>
           </div>
         ))}
       </div>

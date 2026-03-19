@@ -53,13 +53,25 @@
   box-shadow: 0 20px 60px rgba(41, 34, 28, 0.1);
 }
 
+.brandLogo {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  margin-bottom: 24px;
+}
+
+.logoIcon {
+  width: 40px;
+  height: 40px;
+}
+
 .brand {
-  font-size: 14px;
+  font-size: 24px;
   letter-spacing: 0.18em;
   text-transform: uppercase;
   font-weight: 600;
   color: var(--gold);
-  margin-bottom: 24px;
 }
 
 .title {
@@ -75,6 +87,42 @@
   color: var(--muted);
   margin-bottom: 32px;
   line-height: 1.5;
+}
+
+.loginButton {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  width: 100%;
+  padding: 16px 28px;
+  border: none;
+  border-radius: 999px;
+  background: linear-gradient(135deg, #d4af37 0%, #aa8a2e 100%);
+  font-size: 15px;
+  font-weight: 600;
+  color: #0a0a0a;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  font-family: inherit;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  box-shadow: 0 8px 24px rgba(212, 175, 55, 0.3);
+}
+
+.loginButton:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 12px 32px rgba(212, 175, 55, 0.4);
+}
+
+.loginButton:active {
+  transform: translateY(0);
+}
+
+.carpoolIcon {
+  width: 24px;
+  height: 24px;
+  flex-shrink: 0;
 }
 
 .googleButton {

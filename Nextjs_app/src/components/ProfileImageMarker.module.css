@@ -115,6 +115,23 @@
   object-fit: contain;
 }
 
+/* Fallback marker when image fails to load */
+.markerPinFallback {
+  width: 48px;
+  height: 62px;
+}
+
+.markerPinSvg {
+  width: 100%;
+  height: 100%;
+}
+
+.markerPinSvg svg {
+  width: 100%;
+  height: 100%;
+  filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.3));
+}
+
 /* Photo wrapper - positioned inside the marker circle */
 .photoWrapper {
   position: absolute;

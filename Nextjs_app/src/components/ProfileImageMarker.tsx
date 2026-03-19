@@ -10,7 +10,7 @@
  * - Click handler to open MatchRequestModal
  */
 
-import { useMemo } from 'react';
+import { useMemo, useState } from 'react';
 import { OverlayView } from '@react-google-maps/api';
 import { NearbyPerson } from '@/types';
 import styles from './ProfileImageMarker.module.css';
@@ -30,6 +30,8 @@ export default function ProfileImageMarker({
   isNew = false,
   animationDelay = 0,
 }: ProfileImageMarkerProps) {
+  const [markerImageError, setMarkerImageError] = useState(false);
+
   const position = useMemo(
     () => ({
       lat: person.location.lat,
@@ -67,14 +69,24 @@ export default function ProfileImageMarker({
         )}
 
         {/* Marker pin */}
-        <div className={styles.markerPin}>
-          {/* Marker image */}
-          <img
-            src="/assets/map_marker32.png"
-            alt="Map marker"
-            className={styles.markerImage}
-            draggable={false}
-          />
+        <div className={`${styles.markerPin} ${markerImageError ? styles.markerPinFallback : ''}`}>
+          {/* Marker image with fallback */}
+          {!markerImageError ? (
+            <img
+              src="/assets/map_marker32.png"
+              alt="Map marker"
+              className={styles.markerImage}
+              draggable={false}
+              onError={() => setMarkerImageError(true)}
+            />
+          ) : (
+            <div className={styles.markerPinSvg}>
+              <svg viewBox="0 0 24 36" fill="none">
+                <path d="M12 0C5.37 0 0 5.37 0 12c0 9 12 24 12 24s12-15 12-24c0-6.63-5.37-12-12-12z" fill="#d4af37"/>
+                <circle cx="12" cy="12" r="8" fill="#ffffff"/>
+              </svg>
+            </div>
+          )}
 
           {/* Profile photo */}
           <div className={styles.photoWrapper}>

@@ -85,6 +85,25 @@
   transform: translateY(-2px);
 }
 
+/* Skeleton loading state */
+.skeleton {
+  opacity: 0.6;
+}
+
+.shimmer {
+  display: inline-block;
+  animation: shimmerPulse 1.5s ease-in-out infinite;
+}
+
+@keyframes shimmerPulse {
+  0%, 100% {
+    opacity: 0.4;
+  }
+  50% {
+    opacity: 1;
+  }
+}
+
 @media (max-width: 600px) {
   .container {
     grid-template-columns: 1fr;

@@ -212,19 +212,26 @@ export default function DashboardPage() {
     await rejectRequest(request.id);
   }, [rejectRequest]);
 
-  // Open a chat from the bubbles
-  const handleChatBubbleClick = useCallback((chatId: string) => {
-    const chat = chats.find(c => c.id === chatId);
-    if (chat && user) {
-      const otherParticipantId = chat.participants.find(p => p !== user.uid);
-      if (otherParticipantId) {
-        const otherParticipant = chat.participantDetails[otherParticipantId];
-        setActiveChatId(chatId);
-        setActiveChatParticipant({
-          uid: otherParticipantId,
-          displayName: otherParticipant.displayName,
-          photoURL: otherParticipant.photoURL,
-        });
+  // Open a chat from the bubbles or notifications
+  const handleChatBubbleClick = useCallback((chatId: string, participant?: { uid: string; displayName: string; photoURL: string }) => {
+    if (participant) {
+      // Direct participant info passed (from notifications)
+      setActiveChatId(chatId);
+      setActiveChatParticipant(participant);
+    } else {
+      // Lookup from chats
+      const chat = chats.find(c => c.id === chatId);
+      if (chat && user) {
+        const otherParticipantId = chat.participants.find(p => p !== user.uid);
+        if (otherParticipantId) {
+          const otherParticipant = chat.participantDetails[otherParticipantId];
+          setActiveChatId(chatId);
+          setActiveChatParticipant({
+            uid: otherParticipantId,
+            displayName: otherParticipant.displayName,
+            photoURL: otherParticipant.photoURL,
+          });
+        }
       }
     }
   }, [chats, user]);
@@ -463,6 +470,9 @@ export default function DashboardPage() {
           <NotificationBell
             incomingRequests={incomingRequests}
             onRequestClick={handleNotificationClick}
+            chats={chats}
+            currentUserId={user?.uid}
+            onChatClick={handleChatBubbleClick}
           />
         </div>
 
@@ -487,6 +497,9 @@ export default function DashboardPage() {
           <NotificationBell
             incomingRequests={incomingRequests}
             onRequestClick={handleNotificationClick}
+            chats={chats}
+            currentUserId={user?.uid}
+            onChatClick={handleChatBubbleClick}
           />
           {user?.photoURL && (
             <img
@@ -598,15 +611,7 @@ export default function DashboardPage() {
         />
       )}
 
-      {/* Chat Bubbles for other chats */}
-      {user && (
-        <ChatBubbles
-          chats={chats}
-          activeChatId={activeChatId}
-          onChatClick={handleChatBubbleClick}
-          currentUserId={user.uid}
-        />
-      )}
+      {/* Chat Bubbles removed - chats are now in notifications section */}
 
       {/* Group Ride Panel */}
       {groupRide && (

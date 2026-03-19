@@ -126,8 +126,8 @@
 }
 
 .brand {
-  font-size: 18px;
-  letter-spacing: 0.15em;
+  font-size: 20px;
+  letter-spacing: 0.18em;
   text-transform: uppercase;
   font-weight: 600;
   color: var(--gold);
@@ -137,19 +137,19 @@
 }
 
 .brand:hover {
-  transform: scale(1.08);
-  background: linear-gradient(135deg, #c0c0c0 0%, #e8e8e8 25%, #a8a8a8 50%, #d0d0d0 75%, #b8b8b8 100%);
-  -webkit-background-clip: text;
-  background-clip: text;
-  -webkit-text-fill-color: transparent;
+  font-size: 21px;
+}
+
+.brand:active {
+  font-size: 22px;
 }
 
 .headerSearch {
   position: absolute;
   left: 50%;
   transform: translateX(-50%);
-  width: 100%;
-  max-width: 280px;
+  width: calc(100% - 320px);
+  max-width: 600px;
   padding: 0 16px;
 }
 

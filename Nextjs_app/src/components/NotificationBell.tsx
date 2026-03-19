@@ -5,39 +5,51 @@
  *
  * Bell icon in header that shows:
  * - Badge with unread notification count
- * - Dropdown with recent notifications
+ * - Dropdown with recent notifications and active chats
  * - Click handler to view full notifications
  */
 
 import { useState, useRef, useEffect } from 'react';
-import { MatchRequest } from '@/types';
+import { MatchRequest, Chat } from '@/types';
 import styles from './NotificationBell.module.css';
 
 interface Notification {
   id: string;
-  type: 'match_request' | 'match_accepted' | 'message' | 'group_invite';
+  type: 'match_request' | 'match_accepted' | 'message' | 'group_invite' | 'chat';
   title: string;
   message: string;
   photoURL?: string;
   timestamp: Date;
   read: boolean;
   data?: MatchRequest;
+  chatData?: {
+    chatId: string;
+    participantId: string;
+    participantName: string;
+    participantPhoto: string;
+  };
 }
 
 interface NotificationBellProps {
   incomingRequests: MatchRequest[];
   onRequestClick: (request: MatchRequest) => void;
+  chats?: Chat[];
+  currentUserId?: string;
+  onChatClick?: (chatId: string, participant: { uid: string; displayName: string; photoURL: string }) => void;
 }
 
 export default function NotificationBell({
   incomingRequests,
   onRequestClick,
+  chats = [],
+  currentUserId,
+  onChatClick,
 }: NotificationBellProps) {
   const [isOpen, setIsOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
 
   // Convert incoming requests to notifications
-  const notifications: Notification[] = incomingRequests.map((request) => ({
+  const requestNotifications: Notification[] = incomingRequests.map((request) => ({
     id: request.id,
     type: 'match_request' as const,
     title: 'New Match Request',
@@ -48,7 +60,30 @@ export default function NotificationBell({
     data: request,
   }));
 
-  const unreadCount = notifications.filter((n) => !n.read).length;
+  // Convert active chats to notifications
+  const chatNotifications: Notification[] = chats.map((chat) => {
+    const otherParticipantId = chat.participants.find(p => p !== currentUserId) || '';
+    const otherParticipant = chat.participantDetails[otherParticipantId];
+    const timestamp = chat.lastMessage?.timestamp?.toDate?.() || chat.createdAt?.toDate?.() || new Date();
+    return {
+      id: `chat-${chat.id}`,
+      type: 'chat' as const,
+      title: 'Active Chat',
+      message: otherParticipant?.displayName || 'Chat',
+      photoURL: otherParticipant?.photoURL,
+      timestamp,
+      read: true,
+      chatData: {
+        chatId: chat.id,
+        participantId: otherParticipantId,
+        participantName: otherParticipant?.displayName || 'User',
+        participantPhoto: otherParticipant?.photoURL || '',
+      },
+    };
+  });
+
+  const notifications = [...requestNotifications, ...chatNotifications];
+  const unreadCount = requestNotifications.filter((n) => !n.read).length + chats.length;
 
   // Close dropdown when clicking outside
   useEffect(() => {
@@ -70,6 +105,13 @@ export default function NotificationBell({
   const handleNotificationClick = (notification: Notification) => {
     if (notification.type === 'match_request' && notification.data) {
       onRequestClick(notification.data);
+      setIsOpen(false);
+    } else if (notification.type === 'chat' && notification.chatData && onChatClick) {
+      onChatClick(notification.chatData.chatId, {
+        uid: notification.chatData.participantId,
+        displayName: notification.chatData.participantName,
+        photoURL: notification.chatData.participantPhoto,
+      });
       setIsOpen(false);
     }
   };
@@ -154,6 +196,11 @@ export default function NotificationBell({
                       {notification.type === 'match_request' && (
                         <svg viewBox="0 0 24 24" fill="currentColor">
                           <path d="M16 11c1.66 0 2.99-1.34 2.99-3S17.66 5 16 5c-1.66 0-3 1.34-3 3s1.34 3 3 3zm-8 0c1.66 0 2.99-1.34 2.99-3S9.66 5 8 5C6.34 5 5 6.34 5 8s1.34 3 3 3zm0 2c-2.33 0-7 1.17-7 3.5V19h14v-2.5c0-2.33-4.67-3.5-7-3.5zm8 0c-.29 0-.62.02-.97.05 1.16.84 1.97 1.97 1.97 3.45V19h6v-2.5c0-2.33-4.67-3.5-7-3.5z" />
+                        </svg>
+                      )}
+                      {notification.type === 'chat' && (
+                        <svg viewBox="0 0 24 24" fill="currentColor">
+                          <path d="M20 2H4c-1.1 0-2 .9-2 2v18l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zm0 14H6l-2 2V4h16v12z" />
                         </svg>
                       )}
                     </span>

@@ -345,8 +345,12 @@ export default function MapView({
     return (
       <div className={styles.placeholder}>
         <div className={styles.placeholderContent}>
-          <div className={styles.spinner} />
-          <p>Loading maps...</p>
+          <div className={styles.loadingAnimation}>
+            <div className={styles.spinner} />
+            <div className={styles.loadingRing} />
+          </div>
+          <p>Loading your map...</p>
+          <span className={styles.loadingHint}>Finding nearby riders</span>
         </div>
       </div>
     );

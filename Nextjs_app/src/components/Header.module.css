@@ -17,6 +17,15 @@
   line-height: 1;
   text-decoration: none;
   color: inherit;
+  transition: all 0.2s ease;
+}
+
+.brand:hover {
+  font-size: 21px;
+}
+
+.brand:active {
+  font-size: 22px;
 }
 
 .nav {

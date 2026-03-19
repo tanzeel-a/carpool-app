@@ -15,6 +15,7 @@
   border-radius: 999px;
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
   transition: all 0.2s ease;
+  width: 100%;
 }
 
 .inputWrapper:focus-within {
@@ -44,6 +45,7 @@
   font-size: 15px;
   font-family: inherit;
   color: #11100e;
+  width: 100%;
   min-width: 0;
 }
 
@@ -263,7 +265,12 @@
 
 /* Tablet adjustments */
 @media (max-width: 768px) {
+  .container {
+    width: 100%;
+  }
+
   .inputWrapper {
+    width: 100%;
     border-radius: 999px;
     box-shadow: 0 2px 12px rgba(0, 0, 0, 0.12);
   }
@@ -271,6 +278,7 @@
   .input {
     padding: 14px 16px 14px 46px;
     font-size: 15px;
+    width: 100%;
   }
 
   .radiusBtn {
@@ -283,7 +291,13 @@
 
 /* Mobile adjustments */
 @media (max-width: 480px) {
+  .container {
+    width: 100%;
+  }
+
   .inputWrapper {
+    width: 100%;
+    min-width: 100%;
     border-radius: 999px;
     box-shadow: 0 2px 16px rgba(0, 0, 0, 0.12);
   }
@@ -302,6 +316,8 @@
     padding: 16px 18px 16px 48px;
     font-size: 16px; /* Prevents zoom on iOS */
     min-height: 52px;
+    width: 100%;
+    flex: 1;
   }
 
   .input::placeholder {
