@@ -179,7 +179,7 @@ export default function PrivacyPolicy() {
                 <li><strong>Block Users:</strong> Block specific users from seeing your profile or contacting you</li>
               </ul>
               <p>
-                To exercise these rights, please contact us at <a href="mailto:privacy@carpool.app">privacy@carpool.app</a>.
+                To exercise these rights, please contact us at <a href="mailto:is.this.tanzeel@gmail.com">is.this.tanzeel@gmail.com</a>.
               </p>
             </section>
 
@@ -240,8 +240,7 @@ export default function PrivacyPolicy() {
               </p>
               <div className={styles.contactInfo}>
                 <p><strong>Carpool</strong></p>
-                <p>Email: <a href="mailto:privacy@carpool.app">privacy@carpool.app</a></p>
-                <p>General Inquiries: <a href="mailto:gitpushscience@gmail.com">gitpushscience@gmail.com</a></p>
+                <p>Email: <a href="mailto:is.this.tanzeel@gmail.com">is.this.tanzeel@gmail.com</a></p>
               </div>
             </section>
 

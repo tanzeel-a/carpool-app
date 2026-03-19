@@ -67,7 +67,7 @@ export default function TermsOfService() {
               <h2>3. Eligibility</h2>
               <p>To use our Service, you must:</p>
               <ul>
-                <li>Be at least 18 years of age</li>
+                <li>Be at least 16 years of age</li>
                 <li>Have the legal capacity to enter into a binding agreement</li>
                 <li>Not be prohibited from using the Service under applicable laws</li>
                 <li>Provide accurate and complete registration information</li>
@@ -299,8 +299,7 @@ export default function TermsOfService() {
               </p>
               <div className={styles.contactInfo}>
                 <p><strong>Carpool</strong></p>
-                <p>Email: <a href="mailto:legal@carpool.app">legal@carpool.app</a></p>
-                <p>General Inquiries: <a href="mailto:gitpushscience@gmail.com">gitpushscience@gmail.com</a></p>
+                <p>Email: <a href="mailto:is.this.tanzeel@gmail.com">is.this.tanzeel@gmail.com</a></p>
               </div>
             </section>
           </div>
