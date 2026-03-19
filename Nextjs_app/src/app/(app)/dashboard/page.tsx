@@ -277,7 +277,7 @@ export default function DashboardPage() {
   }, [activeChatId]);
 
   // Handle view location from persistent chat
-  const handleViewLocationFromChat = useCallback((location: { lat: number; lng: number }) => {
+  const handleViewLocationFromChat = useCallback((location: { lat: number; lng: number }, _isMe?: boolean) => {
     setFocusLocation({
       lat: location.lat,
       lng: location.lng,

@@ -184,6 +184,7 @@ export interface Chat {
   participantDetails: Record<string, { displayName: string; photoURL: string }>;
   lastMessage?: { text: string; senderId: string; timestamp: Timestamp };
   createdAt: Timestamp;
+  encryptionKeys?: Record<string, string>; // userId -> base64 public key for E2EE
 }
 
 /**

@@ -28,6 +28,12 @@ import {
 import { db } from '@/lib/firebase';
 import { useAuth } from '@/components/AuthProvider';
 import { MatchRequest, Chat, NearbyPerson } from '@/types';
+import {
+  generateKeyPair,
+  exportPublicKey,
+  storePrivateKey,
+  isEncryptionSupported,
+} from '@/lib/crypto';
 
 const REQUEST_EXPIRY_MINUTES = 5;
 
@@ -244,7 +250,30 @@ export function useMatchRequests(): UseMatchRequestsResult {
         const chatId = [user.uid, request.fromUserId].sort().join('_');
         const chatRef = doc(db, 'chats', chatId);
 
-        const chatData: Omit<Chat, 'id'> = {
+        // Generate encryption keys for E2EE
+        let encryptionKeys: Record<string, string> = {};
+        if (isEncryptionSupported()) {
+          try {
+            // Generate key pair for the accepting user
+            const myKeyPair = await generateKeyPair();
+            const myPublicKeyBase64 = await exportPublicKey(myKeyPair.publicKey);
+
+            // Store private key in IndexedDB
+            await storePrivateKey(chatId, user.uid, myKeyPair.privateKey);
+
+            // Store public key in chat document
+            encryptionKeys = {
+              [user.uid]: myPublicKeyBase64,
+            };
+
+            console.log('[MatchRequests] Generated encryption keys for user:', user.uid);
+          } catch (cryptoErr) {
+            console.warn('[MatchRequests] Encryption not available:', cryptoErr);
+            // Continue without encryption if it fails
+          }
+        }
+
+        const chatData: Omit<Chat, 'id'> & { encryptionKeys?: Record<string, string> } = {
           participants: [user.uid, request.fromUserId],
           participantDetails: {
             [user.uid]: {
@@ -262,11 +291,12 @@ export function useMatchRequests(): UseMatchRequestsResult {
             senderId: 'system',
             timestamp: Timestamp.now(),
           },
+          ...(Object.keys(encryptionKeys).length > 0 && { encryptionKeys }),
         };
 
         await setDoc(chatRef, chatData, { merge: true });
 
-        // Add system message to chat
+        // Add system message to chat (not encrypted since it's from system)
         await addDoc(collection(db, 'chats', chatId, 'messages'), {
           senderId: 'system',
           senderName: 'System',
@@ -274,6 +304,7 @@ export function useMatchRequests(): UseMatchRequestsResult {
           timestamp: serverTimestamp(),
           type: 'system',
           read: false,
+          encrypted: false,
         });
 
         setLoading(false);

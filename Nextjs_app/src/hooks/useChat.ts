@@ -21,6 +21,7 @@ import {
   updateDoc,
   doc,
   getDocs,
+  getDoc,
   startAfter,
   Timestamp,
   serverTimestamp,
@@ -30,6 +31,19 @@ import {
 import { db } from '@/lib/firebase';
 import { useAuth } from '@/components/AuthProvider';
 import { PersistentChatMessage, Chat } from '@/types';
+import {
+  generateKeyPair,
+  exportPublicKey,
+  importPublicKey,
+  storePrivateKey,
+  getPrivateKey,
+  encryptMessage,
+  decryptMessage,
+  encryptLocation,
+  decryptLocation,
+  isEncryptionSupported,
+  EncryptedMessage,
+} from '@/lib/crypto';
 
 const MESSAGES_PER_PAGE = 50;
 
@@ -46,6 +60,7 @@ interface UseChatResult {
   hasMore: boolean;
   error: string | null;
   unreadCount: number;
+  isEncrypted: boolean;
   sendMessage: (text: string) => Promise<void>;
   sendLocation: (location: { lat: number; lng: number }) => Promise<void>;
   markAsRead: () => Promise<void>;
@@ -63,10 +78,110 @@ export function useChat(options: UseChatOptions): UseChatResult {
   const [hasMore, setHasMore] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [unreadCount, setUnreadCount] = useState(0);
+  const [isEncrypted, setIsEncrypted] = useState(false);
 
   const lastDocRef = useRef<QueryDocumentSnapshot<DocumentData> | null>(null);
+  const myPrivateKeyRef = useRef<CryptoKey | null>(null);
+  const myPublicKeyRef = useRef<CryptoKey | null>(null);
+  const theirPublicKeyRef = useRef<CryptoKey | null>(null);
 
-  // Subscribe to chat metadata
+  // Initialize encryption keys
+  const initializeEncryption = useCallback(async () => {
+    if (!chatId || !user || !db || !isEncryptionSupported()) {
+      return false;
+    }
+
+    try {
+      // Try to get existing private key from IndexedDB
+      let myPrivateKey = await getPrivateKey(chatId, user.uid);
+
+      if (!myPrivateKey) {
+        // Generate new key pair
+        const keyPair = await generateKeyPair();
+        myPrivateKey = keyPair.privateKey;
+        myPrivateKeyRef.current = keyPair.privateKey;
+        myPublicKeyRef.current = keyPair.publicKey;
+
+        // Store private key locally
+        await storePrivateKey(chatId, user.uid, keyPair.privateKey);
+
+        // Store public key in chat document
+        const publicKeyBase64 = await exportPublicKey(keyPair.publicKey);
+        const chatRef = doc(db, 'chats', chatId);
+        await updateDoc(chatRef, {
+          [`encryptionKeys.${user.uid}`]: publicKeyBase64,
+        });
+
+        console.log('[useChat] Generated new encryption keys');
+      } else {
+        myPrivateKeyRef.current = myPrivateKey;
+        // We need to regenerate public key from private (not possible with ECDH)
+        // So we need to read it from the chat document
+      }
+
+      // Get other participant's public key from chat document
+      const chatDoc = await getDoc(doc(db, 'chats', chatId));
+      if (chatDoc.exists()) {
+        const chatData = chatDoc.data();
+        const otherUserId = chatData.participants?.find((p: string) => p !== user.uid);
+
+        if (otherUserId && chatData.encryptionKeys?.[otherUserId]) {
+          theirPublicKeyRef.current = await importPublicKey(chatData.encryptionKeys[otherUserId]);
+          console.log('[useChat] Loaded other user public key');
+        }
+
+        // Also get our own public key if we don't have it
+        if (chatData.encryptionKeys?.[user.uid] && !myPublicKeyRef.current) {
+          myPublicKeyRef.current = await importPublicKey(chatData.encryptionKeys[user.uid]);
+        }
+      }
+
+      const canEncrypt = myPrivateKeyRef.current !== null &&
+                         myPublicKeyRef.current !== null &&
+                         theirPublicKeyRef.current !== null;
+      setIsEncrypted(canEncrypt);
+      return canEncrypt;
+    } catch (err) {
+      console.error('[useChat] Encryption initialization failed:', err);
+      return false;
+    }
+  }, [chatId, user]);
+
+  // Decrypt a message
+  const decryptMessageData = useCallback(async (data: DocumentData): Promise<{ text?: string; location?: { lat: number; lng: number } }> => {
+    if (!data.encrypted || !myPrivateKeyRef.current) {
+      return { text: data.text, location: data.location };
+    }
+
+    try {
+      if (data.encryptedText) {
+        const encryptedMsg: EncryptedMessage = {
+          ciphertext: data.encryptedText.ciphertext,
+          iv: data.encryptedText.iv,
+          senderPublicKey: data.encryptedText.senderPublicKey,
+        };
+        const text = await decryptMessage(encryptedMsg, myPrivateKeyRef.current);
+        return { text };
+      }
+
+      if (data.encryptedLocation) {
+        const encryptedLoc: EncryptedMessage = {
+          ciphertext: data.encryptedLocation.ciphertext,
+          iv: data.encryptedLocation.iv,
+          senderPublicKey: data.encryptedLocation.senderPublicKey,
+        };
+        const location = await decryptLocation(encryptedLoc, myPrivateKeyRef.current);
+        return { location };
+      }
+
+      return { text: data.text, location: data.location };
+    } catch (err) {
+      console.error('[useChat] Decryption failed:', err);
+      return { text: '[Encrypted message - unable to decrypt]' };
+    }
+  }, []);
+
+  // Subscribe to chat metadata and initialize encryption
   useEffect(() => {
     if (!chatId || !enabled || !db) {
       setChat(null);
@@ -76,12 +191,18 @@ export function useChat(options: UseChatOptions): UseChatResult {
     const chatRef = doc(db, 'chats', chatId);
     const unsubscribe = onSnapshot(
       chatRef,
-      (snapshot) => {
+      async (snapshot) => {
         if (snapshot.exists()) {
-          setChat({
+          const chatData = {
             id: snapshot.id,
             ...snapshot.data(),
-          } as Chat);
+          } as Chat;
+          setChat(chatData);
+
+          // Initialize encryption when chat is loaded
+          if (user && isEncryptionSupported()) {
+            await initializeEncryption();
+          }
         } else {
           setChat(null);
         }
@@ -92,9 +213,9 @@ export function useChat(options: UseChatOptions): UseChatResult {
     );
 
     return () => unsubscribe();
-  }, [chatId, enabled]);
+  }, [chatId, enabled, user, initializeEncryption]);
 
-  // Subscribe to messages
+  // Subscribe to messages with decryption
   useEffect(() => {
     if (!chatId || !enabled || !db) {
       setMessages([]);
@@ -112,28 +233,16 @@ export function useChat(options: UseChatOptions): UseChatResult {
 
     const unsubscribe = onSnapshot(
       q,
-      (snapshot) => {
-        const newMessages: PersistentChatMessage[] = [];
+      async (snapshot) => {
+        const rawMessages: { docSnap: QueryDocumentSnapshot<DocumentData>; data: DocumentData }[] = [];
         let unread = 0;
 
         snapshot.docs.forEach((docSnap) => {
           const data = docSnap.data();
-          const message: PersistentChatMessage = {
-            id: docSnap.id,
-            chatId: chatId,
-            senderId: data.senderId,
-            senderName: data.senderName,
-            senderPhoto: data.senderPhoto,
-            text: data.text,
-            location: data.location,
-            timestamp: data.timestamp,
-            type: data.type || 'text',
-            read: data.read || false,
-          };
-          newMessages.push(message);
+          rawMessages.push({ docSnap, data });
 
           // Count unread messages from others
-          if (!message.read && message.senderId !== user?.uid) {
+          if (!data.read && data.senderId !== user?.uid) {
             unread++;
           }
         });
@@ -143,8 +252,28 @@ export function useChat(options: UseChatOptions): UseChatResult {
           lastDocRef.current = snapshot.docs[snapshot.docs.length - 1];
         }
 
+        // Decrypt messages in parallel
+        const decryptedMessages = await Promise.all(
+          rawMessages.map(async ({ docSnap, data }) => {
+            const decrypted = await decryptMessageData(data);
+            const message: PersistentChatMessage = {
+              id: docSnap.id,
+              chatId: chatId,
+              senderId: data.senderId,
+              senderName: data.senderName,
+              senderPhoto: data.senderPhoto,
+              text: decrypted.text,
+              location: decrypted.location,
+              timestamp: data.timestamp,
+              type: data.type || 'text',
+              read: data.read || false,
+            };
+            return message;
+          })
+        );
+
         // Messages are in desc order, reverse for display
-        setMessages(newMessages.reverse());
+        setMessages(decryptedMessages.reverse());
         setUnreadCount(unread);
         setHasMore(snapshot.docs.length === MESSAGES_PER_PAGE);
         setLoading(false);
@@ -157,7 +286,7 @@ export function useChat(options: UseChatOptions): UseChatResult {
     );
 
     return () => unsubscribe();
-  }, [chatId, enabled, user?.uid]);
+  }, [chatId, enabled, user?.uid, decryptMessageData]);
 
   // Send a text message
   const sendMessage = useCallback(
@@ -165,22 +294,54 @@ export function useChat(options: UseChatOptions): UseChatResult {
       if (!chatId || !user || !db || !text.trim()) return;
 
       try {
-        const messageData = {
-          senderId: user.uid,
-          senderName: user.displayName,
-          senderPhoto: user.photoURL,
-          text: text.trim(),
-          timestamp: serverTimestamp(),
-          type: 'text',
-          read: false,
-        };
+        // Ensure encryption is initialized
+        await initializeEncryption();
+
+        let messageData: Record<string, unknown>;
+
+        // Encrypt if we have all the keys
+        if (myPrivateKeyRef.current && myPublicKeyRef.current && theirPublicKeyRef.current) {
+          const encrypted = await encryptMessage(
+            text.trim(),
+            myPrivateKeyRef.current,
+            myPublicKeyRef.current,
+            theirPublicKeyRef.current
+          );
+
+          messageData = {
+            senderId: user.uid,
+            senderName: user.displayName,
+            senderPhoto: user.photoURL,
+            encryptedText: encrypted,
+            encrypted: true,
+            timestamp: serverTimestamp(),
+            type: 'text',
+            read: false,
+          };
+
+          console.log('[useChat] Sending encrypted message');
+        } else {
+          // Fallback to unencrypted if keys not available
+          messageData = {
+            senderId: user.uid,
+            senderName: user.displayName,
+            senderPhoto: user.photoURL,
+            text: text.trim(),
+            encrypted: false,
+            timestamp: serverTimestamp(),
+            type: 'text',
+            read: false,
+          };
+
+          console.log('[useChat] Sending unencrypted message (keys not ready)');
+        }
 
         await addDoc(collection(db, 'chats', chatId, 'messages'), messageData);
 
-        // Update last message in chat metadata
+        // Update last message in chat metadata (use generic text for encrypted)
         await updateDoc(doc(db, 'chats', chatId), {
           lastMessage: {
-            text: text.trim(),
+            text: messageData.encrypted ? 'New message' : text.trim(),
             senderId: user.uid,
             timestamp: serverTimestamp(),
           },
@@ -190,7 +351,7 @@ export function useChat(options: UseChatOptions): UseChatResult {
         setError('Failed to send message');
       }
     },
-    [chatId, user]
+    [chatId, user, initializeEncryption]
   );
 
   // Send a location message
@@ -199,15 +360,47 @@ export function useChat(options: UseChatOptions): UseChatResult {
       if (!chatId || !user || !db) return;
 
       try {
-        const messageData = {
-          senderId: user.uid,
-          senderName: user.displayName,
-          senderPhoto: user.photoURL,
-          location,
-          timestamp: serverTimestamp(),
-          type: 'location',
-          read: false,
-        };
+        // Ensure encryption is initialized
+        await initializeEncryption();
+
+        let messageData: Record<string, unknown>;
+
+        // Encrypt if we have all the keys
+        if (myPrivateKeyRef.current && myPublicKeyRef.current && theirPublicKeyRef.current) {
+          const encrypted = await encryptLocation(
+            location,
+            myPrivateKeyRef.current,
+            myPublicKeyRef.current,
+            theirPublicKeyRef.current
+          );
+
+          messageData = {
+            senderId: user.uid,
+            senderName: user.displayName,
+            senderPhoto: user.photoURL,
+            encryptedLocation: encrypted,
+            encrypted: true,
+            timestamp: serverTimestamp(),
+            type: 'location',
+            read: false,
+          };
+
+          console.log('[useChat] Sending encrypted location');
+        } else {
+          // Fallback to unencrypted if keys not available
+          messageData = {
+            senderId: user.uid,
+            senderName: user.displayName,
+            senderPhoto: user.photoURL,
+            location,
+            encrypted: false,
+            timestamp: serverTimestamp(),
+            type: 'location',
+            read: false,
+          };
+
+          console.log('[useChat] Sending unencrypted location (keys not ready)');
+        }
 
         await addDoc(collection(db, 'chats', chatId, 'messages'), messageData);
 
@@ -224,7 +417,7 @@ export function useChat(options: UseChatOptions): UseChatResult {
         setError('Failed to send location');
       }
     },
-    [chatId, user]
+    [chatId, user, initializeEncryption]
   );
 
   // Mark all messages as read
@@ -340,6 +533,7 @@ export function useChat(options: UseChatOptions): UseChatResult {
     hasMore,
     error,
     unreadCount,
+    isEncrypted,
     sendMessage,
     sendLocation,
     markAsRead,
