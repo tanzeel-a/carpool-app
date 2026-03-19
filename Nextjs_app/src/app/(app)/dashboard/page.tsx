@@ -33,6 +33,8 @@ import {
   addDoc,
   updateDoc,
   doc,
+  deleteDoc,
+  getDocs,
   Timestamp,
   GeoPoint,
 } from 'firebase/firestore';
@@ -92,10 +94,13 @@ export default function DashboardPage() {
   }, [presenceLocation]);
 
   // Nearby people - query ALL online users nearby (real-time)
-  const { nearbyPeople, newlyFoundPeople } = useNearbyPeople({
+  // Applies adaptive filtering: shows all if ≤10 people, filters by destination if >10
+  const { nearbyPeople, newlyFoundPeople, isFiltered, totalCount } = useNearbyPeople({
     userLocation,
     radius: searchRadius,
     enabled: !!user && !!userLocation,
+    userDestination: destination,        // Pass destination for smart filtering
+    destinationMatchRadius: 500,         // 500m destination match radius
   });
 
   // Match requests - handle incoming/outgoing requests
@@ -241,6 +246,35 @@ export default function DashboardPage() {
     setActiveChatId(null);
     setActiveChatParticipant(null);
   }, []);
+
+  // Delete a chat from notifications
+  const handleDeleteChat = useCallback(async (chatId: string) => {
+    if (!db) return;
+
+    const firestore = db; // TypeScript narrowing helper
+
+    try {
+      // Close the chat if it's currently active
+      if (activeChatId === chatId) {
+        setActiveChatId(null);
+        setActiveChatParticipant(null);
+      }
+
+      // Delete all messages in the chat
+      const messagesRef = collection(firestore, 'chats', chatId, 'messages');
+      const messagesSnapshot = await getDocs(messagesRef);
+      const deletePromises = messagesSnapshot.docs.map((docSnap) =>
+        deleteDoc(doc(firestore, 'chats', chatId, 'messages', docSnap.id))
+      );
+      await Promise.all(deletePromises);
+
+      // Delete the chat document
+      await deleteDoc(doc(firestore, 'chats', chatId));
+    } catch (err) {
+      console.error('Error deleting chat:', err);
+      setError('Failed to delete chat');
+    }
+  }, [activeChatId]);
 
   // Handle view location from persistent chat
   const handleViewLocationFromChat = useCallback((location: { lat: number; lng: number }) => {
@@ -473,6 +507,7 @@ export default function DashboardPage() {
             chats={chats}
             currentUserId={user?.uid}
             onChatClick={handleChatBubbleClick}
+            onDeleteChat={handleDeleteChat}
           />
         </div>
 
@@ -500,6 +535,7 @@ export default function DashboardPage() {
             chats={chats}
             currentUserId={user?.uid}
             onChatClick={handleChatBubbleClick}
+            onDeleteChat={handleDeleteChat}
           />
           {user?.photoURL && (
             <img
@@ -544,8 +580,17 @@ export default function DashboardPage() {
         {nearbyPeople.length > 0 && !groupRide && (
           <div className={styles.nearbyIndicator}>
             <span className={styles.nearbyDot} />
-            {nearbyPeople.length} {nearbyPeople.length === 1 ? 'person' : 'people'} nearby
-            <span className={styles.nearbyHint}>Tap markers to add to group</span>
+            {isFiltered ? (
+              <>
+                {nearbyPeople.length} {nearbyPeople.length === 1 ? 'person' : 'people'} going your way
+                <span className={styles.nearbyHint}>{totalCount} total nearby</span>
+              </>
+            ) : (
+              <>
+                {nearbyPeople.length} {nearbyPeople.length === 1 ? 'person' : 'people'} nearby
+                <span className={styles.nearbyHint}>Tap markers to connect</span>
+              </>
+            )}
           </div>
         )}
 

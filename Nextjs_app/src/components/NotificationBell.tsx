@@ -36,6 +36,7 @@ interface NotificationBellProps {
   chats?: Chat[];
   currentUserId?: string;
   onChatClick?: (chatId: string, participant: { uid: string; displayName: string; photoURL: string }) => void;
+  onDeleteChat?: (chatId: string) => void;
 }
 
 export default function NotificationBell({
@@ -44,6 +45,7 @@ export default function NotificationBell({
   chats = [],
   currentUserId,
   onChatClick,
+  onDeleteChat,
 }: NotificationBellProps) {
   const [isOpen, setIsOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
@@ -116,6 +118,13 @@ export default function NotificationBell({
     }
   };
 
+  const handleDeleteChat = (e: React.MouseEvent, chatId: string) => {
+    e.stopPropagation(); // Prevent opening the chat
+    if (onDeleteChat) {
+      onDeleteChat(chatId);
+    }
+  };
+
   const formatTimeAgo = (date: Date) => {
     const seconds = Math.floor((Date.now() - date.getTime()) / 1000);
     if (seconds < 60) return 'Just now';
@@ -177,43 +186,56 @@ export default function NotificationBell({
           ) : (
             <div className={styles.notificationList}>
               {notifications.map((notification) => (
-                <button
-                  key={notification.id}
-                  className={`${styles.notificationItem} ${!notification.read ? styles.unread : ''}`}
-                  onClick={() => handleNotificationClick(notification)}
-                >
-                  <div className={styles.notificationAvatar}>
-                    {notification.photoURL ? (
-                      <img src={notification.photoURL} alt="" />
-                    ) : (
-                      <div className={styles.avatarPlaceholder}>
-                        <svg viewBox="0 0 24 24" fill="currentColor">
-                          <path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z" />
-                        </svg>
-                      </div>
-                    )}
-                    <span className={styles.typeIcon}>
-                      {notification.type === 'match_request' && (
-                        <svg viewBox="0 0 24 24" fill="currentColor">
-                          <path d="M16 11c1.66 0 2.99-1.34 2.99-3S17.66 5 16 5c-1.66 0-3 1.34-3 3s1.34 3 3 3zm-8 0c1.66 0 2.99-1.34 2.99-3S9.66 5 8 5C6.34 5 5 6.34 5 8s1.34 3 3 3zm0 2c-2.33 0-7 1.17-7 3.5V19h14v-2.5c0-2.33-4.67-3.5-7-3.5zm8 0c-.29 0-.62.02-.97.05 1.16.84 1.97 1.97 1.97 3.45V19h6v-2.5c0-2.33-4.67-3.5-7-3.5z" />
-                        </svg>
+                <div key={notification.id} className={styles.notificationItemWrapper}>
+                  <button
+                    className={`${styles.notificationItem} ${!notification.read ? styles.unread : ''}`}
+                    onClick={() => handleNotificationClick(notification)}
+                  >
+                    <div className={styles.notificationAvatar}>
+                      {notification.photoURL ? (
+                        <img src={notification.photoURL} alt="" />
+                      ) : (
+                        <div className={styles.avatarPlaceholder}>
+                          <svg viewBox="0 0 24 24" fill="currentColor">
+                            <path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z" />
+                          </svg>
+                        </div>
                       )}
-                      {notification.type === 'chat' && (
-                        <svg viewBox="0 0 24 24" fill="currentColor">
-                          <path d="M20 2H4c-1.1 0-2 .9-2 2v18l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zm0 14H6l-2 2V4h16v12z" />
-                        </svg>
-                      )}
-                    </span>
-                  </div>
-                  <div className={styles.notificationContent}>
-                    <p className={styles.notificationTitle}>{notification.title}</p>
-                    <p className={styles.notificationMessage}>{notification.message}</p>
-                    <span className={styles.notificationTime}>
-                      {formatTimeAgo(notification.timestamp)}
-                    </span>
-                  </div>
-                  {!notification.read && <span className={styles.unreadDot} />}
-                </button>
+                      <span className={styles.typeIcon}>
+                        {notification.type === 'match_request' && (
+                          <svg viewBox="0 0 24 24" fill="currentColor">
+                            <path d="M16 11c1.66 0 2.99-1.34 2.99-3S17.66 5 16 5c-1.66 0-3 1.34-3 3s1.34 3 3 3zm-8 0c1.66 0 2.99-1.34 2.99-3S9.66 5 8 5C6.34 5 5 6.34 5 8s1.34 3 3 3zm0 2c-2.33 0-7 1.17-7 3.5V19h14v-2.5c0-2.33-4.67-3.5-7-3.5zm8 0c-.29 0-.62.02-.97.05 1.16.84 1.97 1.97 1.97 3.45V19h6v-2.5c0-2.33-4.67-3.5-7-3.5z" />
+                          </svg>
+                        )}
+                        {notification.type === 'chat' && (
+                          <svg viewBox="0 0 24 24" fill="currentColor">
+                            <path d="M20 2H4c-1.1 0-2 .9-2 2v18l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zm0 14H6l-2 2V4h16v12z" />
+                          </svg>
+                        )}
+                      </span>
+                    </div>
+                    <div className={styles.notificationContent}>
+                      <p className={styles.notificationTitle}>{notification.title}</p>
+                      <p className={styles.notificationMessage}>{notification.message}</p>
+                      <span className={styles.notificationTime}>
+                        {formatTimeAgo(notification.timestamp)}
+                      </span>
+                    </div>
+                    {!notification.read && <span className={styles.unreadDot} />}
+                  </button>
+                  {notification.type === 'chat' && notification.chatData && onDeleteChat && (
+                    <button
+                      className={styles.deleteButton}
+                      onClick={(e) => handleDeleteChat(e, notification.chatData!.chatId)}
+                      aria-label="Remove chat"
+                    >
+                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                        <line x1="18" y1="6" x2="6" y2="18" />
+                        <line x1="6" y1="6" x2="18" y2="18" />
+                      </svg>
+                    </button>
+                  )}
+                </div>
               ))}
             </div>
           )}

@@ -20,13 +20,18 @@ import {
 import { db } from '@/lib/firebase';
 import { geohashQueryBounds } from 'geofire-common';
 import { useAuth } from '@/components/AuthProvider';
-import { NearbyPerson, UserPresence } from '@/types';
+import { NearbyPerson, UserPresence, Location } from '@/types';
 
 interface UseNearbyPeopleOptions {
   userLocation: { lat: number; lng: number } | null;
   radius?: number; // in meters
   enabled?: boolean;
+  userDestination?: Location | null;        // Current user's destination for filtering
+  destinationMatchRadius?: number;          // How close destinations must be (default: 500m)
 }
+
+// Threshold for applying destination filtering
+const DESTINATION_FILTER_THRESHOLD = 10;
 
 // Calculate distance between two points in meters using Haversine formula
 function calculateDistance(
@@ -48,13 +53,35 @@ function calculateDistance(
   return R * c;
 }
 
+// Check if two destinations are within the match radius
+function isDestinationMatch(
+  userDest: Location,
+  otherDest: Location | undefined,
+  matchRadius: number
+): boolean {
+  if (!otherDest) return false;
+  const distance = calculateDistance(
+    userDest.lat, userDest.lng,
+    otherDest.lat, otherDest.lng
+  );
+  return distance <= matchRadius;
+}
+
 export function useNearbyPeople(options: UseNearbyPeopleOptions) {
-  const { userLocation, radius = 5000, enabled = true } = options; // Default 5km radius
+  const {
+    userLocation,
+    radius = 5000,
+    enabled = true,
+    userDestination = null,
+    destinationMatchRadius = 500,  // Default 500m for destination matching
+  } = options;
   const { user } = useAuth();
   const [nearbyPeople, setNearbyPeople] = useState<NearbyPerson[]>([]);
   const [newlyFoundPeople, setNewlyFoundPeople] = useState<string[]>([]); // IDs of people just found (for animations)
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [isFiltered, setIsFiltered] = useState(false);  // Whether destination filtering is active
+  const [totalCount, setTotalCount] = useState(0);      // Total people before filtering
 
   // Track previously seen people for detecting new arrivals
   const previousPeopleRef = useRef<Set<string>>(new Set());
@@ -177,13 +204,37 @@ export function useNearbyPeople(options: UseNearbyPeopleOptions) {
           });
 
           // Sort by distance
-          const sortedPeople = Array.from(peopleMap.values()).sort(
+          const allPeople = Array.from(peopleMap.values()).sort(
             (a, b) => a.distance - b.distance
           );
 
+          // Store total count before filtering
+          const total = allPeople.length;
+          setTotalCount(total);
+
+          // Apply adaptive filtering based on people count
+          let filteredPeople = allPeople;
+          let filtered = false;
+
+          if (total > DESTINATION_FILTER_THRESHOLD && userDestination) {
+            // Too many people and user has a destination - filter by destination match
+            filteredPeople = allPeople.filter(person =>
+              isDestinationMatch(userDestination, person.broadcast?.destination, destinationMatchRadius)
+            );
+            filtered = true;
+            console.log('[NearbyPeople] Destination filtering applied:', {
+              total,
+              filtered: filteredPeople.length,
+              userDestination: userDestination.address,
+              matchRadius: destinationMatchRadius,
+            });
+          }
+
+          setIsFiltered(filtered);
+
           // Detect newly found people (for pop-in animations)
-          const currentIds = new Set(sortedPeople.map(p => p.id));
-          const newPeople = sortedPeople
+          const currentIds = new Set(filteredPeople.map(p => p.id));
+          const newPeople = filteredPeople
             .filter(p => !previousPeopleRef.current.has(p.id))
             .map(p => p.id);
 
@@ -194,7 +245,7 @@ export function useNearbyPeople(options: UseNearbyPeopleOptions) {
           }
 
           previousPeopleRef.current = currentIds;
-          setNearbyPeople(sortedPeople);
+          setNearbyPeople(filteredPeople);
           setLoading(false);
         },
         (err) => {
@@ -210,7 +261,7 @@ export function useNearbyPeople(options: UseNearbyPeopleOptions) {
     return () => {
       unsubscribes.forEach((unsub) => unsub());
     };
-  }, [enabled, userLocation?.lat, userLocation?.lng, radius, user?.uid, blockedUsers]);
+  }, [enabled, userLocation?.lat, userLocation?.lng, radius, user?.uid, blockedUsers, userDestination, destinationMatchRadius]);
 
   // Refresh function
   const refresh = useCallback(() => {
@@ -224,5 +275,7 @@ export function useNearbyPeople(options: UseNearbyPeopleOptions) {
     loading,
     error,
     refresh,
+    isFiltered,   // Whether destination filtering is active
+    totalCount,   // Total people before filtering (for UI display)
   };
 }

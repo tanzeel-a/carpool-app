@@ -170,12 +170,23 @@
   overflow-y: auto;
 }
 
+.notificationItemWrapper {
+  position: relative;
+  display: flex;
+  align-items: stretch;
+}
+
+.notificationItemWrapper:not(:last-child) {
+  border-bottom: 1px solid rgba(17, 16, 14, 0.05);
+}
+
 .notificationItem {
   display: flex;
   align-items: flex-start;
   gap: 12px;
   padding: 14px 16px;
-  width: 100%;
+  padding-right: 40px;
+  flex: 1;
   border: none;
   background: transparent;
   cursor: pointer;
@@ -192,8 +203,39 @@
   background: rgba(212, 175, 55, 0.05);
 }
 
-.notificationItem:not(:last-child) {
-  border-bottom: 1px solid rgba(17, 16, 14, 0.05);
+/* Delete button for chat items */
+.deleteButton {
+  position: absolute;
+  right: 8px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 28px;
+  height: 28px;
+  border: none;
+  border-radius: 50%;
+  background: transparent;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0.5;
+  transition: all 0.2s ease;
+}
+
+.deleteButton:hover {
+  background: rgba(239, 68, 68, 0.1);
+  opacity: 1;
+}
+
+.deleteButton svg {
+  width: 14px;
+  height: 14px;
+  color: #6e6660;
+  transition: color 0.2s ease;
+}
+
+.deleteButton:hover svg {
+  color: #ef4444;
 }
 
 /* Avatar */
