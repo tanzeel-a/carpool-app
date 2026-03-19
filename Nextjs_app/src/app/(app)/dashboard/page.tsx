@@ -15,7 +15,6 @@ import { useAuth } from '@/components/AuthProvider';
 import MapView from '@/components/MapView';
 import RideCard from '@/components/RideCard';
 import PlacesAutocomplete from '@/components/PlacesAutocomplete';
-import MatchRequestModal from '@/components/MatchRequestModal';
 import MinimizableChat, { ChatBubbles } from '@/components/MinimizableChat';
 import GroupRidePanel from '@/components/GroupRidePanel';
 import NotificationBell from '@/components/NotificationBell';
@@ -116,9 +115,6 @@ export default function DashboardPage() {
   // All user chats
   const { chats } = useChats();
 
-  // Get the first incoming request for modal display
-  const currentIncomingRequest = incomingRequests[0] || null;
-
   // ============================================
   // Nearby People & Group Ride Handlers
   // ============================================
@@ -166,32 +162,7 @@ export default function DashboardPage() {
     }
   }, [user, outgoingRequests, chats, sendRequest]);
 
-  // Accept incoming match request (when someone requests to join)
-  const handleAcceptMatchRequest = useCallback(async () => {
-    if (!currentIncomingRequest) return;
-
-    setMatchRequestLoading(true);
-    const chatId = await acceptRequest(currentIncomingRequest.id);
-    setMatchRequestLoading(false);
-
-    if (chatId) {
-      // Open chat with the person
-      setActiveChatId(chatId);
-      setActiveChatParticipant({
-        uid: currentIncomingRequest.fromUserId,
-        displayName: currentIncomingRequest.fromUser.displayName,
-        photoURL: currentIncomingRequest.fromUser.photoURL,
-      });
-    }
-  }, [currentIncomingRequest, acceptRequest]);
-
-  // Decline incoming match request
-  const handleDeclineMatchRequest = useCallback(async () => {
-    if (!currentIncomingRequest) return;
-    await rejectRequest(currentIncomingRequest.id);
-  }, [currentIncomingRequest, rejectRequest]);
-
-  // Handle notification bell click - open modal for specific request
+  // Handle notification bell click
   const handleNotificationClick = useCallback((request: MatchRequest) => {
     // The request is already in incomingRequests, modal will show it
     console.log('Notification clicked:', request.fromUser.displayName);
@@ -628,15 +599,7 @@ export default function DashboardPage() {
           Nearby People Feature Components
           ============================================ */}
 
-      {/* Match Request Modal - Receive mode (incoming request) */}
-      <MatchRequestModal
-        incomingRequest={currentIncomingRequest}
-        onAcceptRequest={handleAcceptMatchRequest}
-        onDeclineRequest={handleDeclineMatchRequest}
-        loading={matchRequestLoading}
-      />
-
-      {/* Slide-in Toast Notifications from the right */}
+      {/* Slide-in Toast Notifications */}
       <NotificationToast
         incomingRequests={incomingRequests}
         onAccept={handleToastAccept}
