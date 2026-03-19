@@ -10,6 +10,7 @@
 
 import styles from "./page.module.css";
 import Header from "../components/Header";
+import AnimatedStats from "../components/AnimatedStats";
 
 export default function Home() {
   return (
@@ -52,21 +53,8 @@ export default function Home() {
               <a href="/how-it-works" className={styles.secondary}>How it works</a>
             </div>
 
-            {/* Key statistics - 3 column grid */}
-            <div className={styles.meta}>
-              <div>
-                <span className={styles.metaValue}>50%</span>
-                <span className={styles.metaLabel}>less fare</span>
-              </div>
-              <div>
-                <span className={styles.metaValue}>2x</span>
-                <span className={styles.metaLabel}>less emissions</span>
-              </div>
-              <div>
-                <span className={styles.metaValue}>100m</span>
-                <span className={styles.metaLabel}>match radius</span>
-              </div>
-            </div>
+            {/* Key statistics - animated counters */}
+            <AnimatedStats />
           </div>
 
           {/* Tagline badge at bottom right */}

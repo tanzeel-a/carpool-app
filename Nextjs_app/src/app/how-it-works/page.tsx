@@ -7,6 +7,7 @@
 
 import Link from 'next/link';
 import Header from '@/components/Header';
+import AnimatedStats from '@/components/AnimatedStats';
 import styles from './page.module.css';
 
 export const metadata = {
@@ -30,6 +31,7 @@ export default function HowItWorks() {
           <p className={styles.subtitle}>
             A simple guide to sharing rides and saving money together.
           </p>
+          <AnimatedStats variant="light" />
         </section>
 
         {/* Blog Content */}

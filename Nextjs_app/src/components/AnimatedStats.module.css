@@ -1,0 +1,100 @@
+/**
+ * Animated Stats Component Styles
+ * Dynamic counter-style statistics display
+ */
+
+/* Dark variant (for hero sections with dark backgrounds) */
+.container {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 20px;
+  padding-top: 16px;
+  border-top: 1px solid rgba(212, 175, 55, 0.5);
+  font-family: var(--font-ibm);
+  text-transform: uppercase;
+}
+
+.stat {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.value {
+  display: block;
+  font-size: 28px;
+  font-weight: 700;
+  color: #f4d984;
+  letter-spacing: 0.05em;
+  text-shadow: 0 0 20px rgba(212, 175, 55, 0.6);
+  font-variant-numeric: tabular-nums;
+}
+
+.suffix {
+  font-size: 20px;
+  font-weight: 600;
+  color: #d4af37;
+  margin-left: 2px;
+}
+
+.label {
+  display: block;
+  font-size: 11px;
+  letter-spacing: 0.2em;
+  color: rgba(255, 255, 255, 0.7);
+}
+
+/* Light variant (for pages with light backgrounds) */
+.containerLight {
+  border-top: 1px solid rgba(212, 175, 55, 0.4);
+  padding: 32px 0;
+  margin: 32px 0;
+  border-bottom: 1px solid rgba(212, 175, 55, 0.4);
+  background: linear-gradient(135deg, rgba(212, 175, 55, 0.08) 0%, rgba(212, 175, 55, 0.03) 100%);
+  border-radius: 16px;
+  padding: 32px 24px;
+}
+
+.containerLight .value {
+  color: #11100e;
+  text-shadow: none;
+  font-size: 36px;
+}
+
+.containerLight .suffix {
+  color: #d4af37;
+}
+
+.containerLight .label {
+  color: #6e6660;
+  font-size: 12px;
+}
+
+.containerLight .stat {
+  text-align: center;
+  padding: 16px;
+  background: rgba(255, 255, 255, 0.6);
+  border-radius: 12px;
+  border: 1px solid rgba(212, 175, 55, 0.2);
+  transition: all 0.2s ease;
+}
+
+.containerLight .stat:hover {
+  background: rgba(255, 255, 255, 0.9);
+  border-color: rgba(212, 175, 55, 0.4);
+  transform: translateY(-2px);
+}
+
+@media (max-width: 600px) {
+  .container {
+    grid-template-columns: 1fr;
+  }
+
+  .value {
+    font-size: 24px;
+  }
+
+  .containerLight .value {
+    font-size: 32px;
+  }
+}
