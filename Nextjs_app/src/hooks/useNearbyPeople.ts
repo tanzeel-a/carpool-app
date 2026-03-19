@@ -86,8 +86,32 @@ export function useNearbyPeople(options: UseNearbyPeopleOptions) {
   // Track previously seen people for detecting new arrivals
   const previousPeopleRef = useRef<Set<string>>(new Set());
 
-  // Get blocked users list
+  // Get blocked users list (memoized)
   const blockedUsers = useMemo(() => user?.blockedUsers || [], [user?.blockedUsers]);
+
+  // Memoize userDestination to prevent unnecessary re-subscriptions
+  const userDestinationKey = useMemo(() =>
+    userDestination ? `${userDestination.lat},${userDestination.lng}` : null,
+    [userDestination?.lat, userDestination?.lng]
+  );
+
+  // Store current values in refs to use inside effect without causing re-subscription
+  const userDestinationRef = useRef(userDestination);
+  const destinationMatchRadiusRef = useRef(destinationMatchRadius);
+  const blockedUsersRef = useRef(blockedUsers);
+
+  // Update refs when values change
+  useEffect(() => {
+    userDestinationRef.current = userDestination;
+  }, [userDestination]);
+
+  useEffect(() => {
+    destinationMatchRadiusRef.current = destinationMatchRadius;
+  }, [destinationMatchRadius]);
+
+  useEffect(() => {
+    blockedUsersRef.current = blockedUsers;
+  }, [blockedUsers]);
 
   useEffect(() => {
     if (!enabled || !userLocation || !user || !db) {
@@ -148,9 +172,9 @@ export function useNearbyPeople(options: UseNearbyPeopleOptions) {
               console.log('[NearbyPeople] User went offline:', docData.displayName);
               peopleMap.delete(personId);
             } else {
-              // Filter out self and blocked users
+              // Filter out self and blocked users (use ref to avoid re-subscription)
               if (docData.uid === user.uid) return;
-              if (blockedUsers.includes(docData.uid)) return;
+              if (blockedUsersRef.current.includes(docData.uid)) return;
 
               // Calculate distance
               const distance = calculateDistance(
@@ -212,21 +236,23 @@ export function useNearbyPeople(options: UseNearbyPeopleOptions) {
           const total = allPeople.length;
           setTotalCount(total);
 
-          // Apply adaptive filtering based on people count
+          // Apply adaptive filtering based on people count (use refs to avoid re-subscription)
           let filteredPeople = allPeople;
           let filtered = false;
+          const currentDestination = userDestinationRef.current;
+          const currentMatchRadius = destinationMatchRadiusRef.current;
 
-          if (total > DESTINATION_FILTER_THRESHOLD && userDestination) {
+          if (total > DESTINATION_FILTER_THRESHOLD && currentDestination) {
             // Too many people and user has a destination - filter by destination match
             filteredPeople = allPeople.filter(person =>
-              isDestinationMatch(userDestination, person.broadcast?.destination, destinationMatchRadius)
+              isDestinationMatch(currentDestination, person.broadcast?.destination, currentMatchRadius)
             );
             filtered = true;
             console.log('[NearbyPeople] Destination filtering applied:', {
               total,
               filtered: filteredPeople.length,
-              userDestination: userDestination.address,
-              matchRadius: destinationMatchRadius,
+              userDestination: currentDestination.address,
+              matchRadius: currentMatchRadius,
             });
           }
 
@@ -261,7 +287,9 @@ export function useNearbyPeople(options: UseNearbyPeopleOptions) {
     return () => {
       unsubscribes.forEach((unsub) => unsub());
     };
-  }, [enabled, userLocation?.lat, userLocation?.lng, radius, user?.uid, blockedUsers, userDestination, destinationMatchRadius]);
+  // Only re-subscribe when core query parameters change (location, radius, user)
+  // Filtering params are read from refs to avoid rapid re-subscriptions
+  }, [enabled, userLocation?.lat, userLocation?.lng, radius, user?.uid]);
 
   // Refresh function
   const refresh = useCallback(() => {

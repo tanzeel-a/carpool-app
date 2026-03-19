@@ -3,11 +3,11 @@
 /**
  * PlacesAutocomplete Component
  *
- * Google Places Autocomplete input for destination search
+ * Google Places Autocomplete using the new PlaceAutocompleteElement API
  * Includes a radius selector for co-rider search range
  */
 
-import { useRef, useEffect, useState } from 'react';
+import { useRef, useEffect, useState, useCallback } from 'react';
 import { useJsApiLoader } from '@react-google-maps/api';
 import { Location } from '@/types';
 import styles from './PlacesAutocomplete.module.css';
@@ -40,8 +40,8 @@ export default function PlacesAutocomplete({
   onRadiusChange,
   showRadiusSelector = true,
 }: PlacesAutocompleteProps) {
-  const inputRef = useRef<HTMLInputElement>(null);
-  const autocompleteRef = useRef<google.maps.places.Autocomplete | null>(null);
+  const containerRef = useRef<HTMLDivElement>(null);
+  const autocompleteElementRef = useRef<google.maps.places.PlaceAutocompleteElement | null>(null);
   const [inputValue, setInputValue] = useState('');
   const [isRadiusOpen, setIsRadiusOpen] = useState(false);
 
@@ -50,37 +50,70 @@ export default function PlacesAutocomplete({
     libraries,
   });
 
+  // Memoize the place select handler
+  const handlePlaceSelect = useCallback((e: Event) => {
+    const placeEvent = e as google.maps.places.PlaceAutocompletePlaceSelectEvent;
+    const place = placeEvent.place;
+
+    if (place) {
+      // Fetch full place details including geometry
+      place.fetchFields({ fields: ['displayName', 'formattedAddress', 'location'] }).then(() => {
+        const location = place.location;
+        if (location) {
+          const loc: Location = {
+            lat: location.lat(),
+            lng: location.lng(),
+            address: place.displayName || place.formattedAddress || '',
+          };
+          setInputValue(loc.address);
+          onPlaceSelect(loc);
+        }
+      }).catch((err) => {
+        console.error('Error fetching place details:', err);
+      });
+    }
+  }, [onPlaceSelect]);
+
   useEffect(() => {
-    if (!isLoaded || !inputRef.current || autocompleteRef.current) return;
+    if (!isLoaded || !containerRef.current || autocompleteElementRef.current) return;
 
-    // Initialize autocomplete
-    autocompleteRef.current = new google.maps.places.Autocomplete(inputRef.current, {
-      types: ['establishment', 'geocode'],
+    // Create the new PlaceAutocompleteElement
+    const autocompleteElement = new google.maps.places.PlaceAutocompleteElement({
       componentRestrictions: { country: 'in' }, // Restrict to India
-      fields: ['formatted_address', 'geometry', 'name'],
     });
 
-    // Listen for place selection
-    autocompleteRef.current.addListener('place_changed', () => {
-      const place = autocompleteRef.current?.getPlace();
+    // Style the element to match our design
+    autocompleteElement.style.cssText = `
+      width: 100%;
+      --gmpx-color-surface: transparent;
+      --gmpx-color-on-surface: #11100e;
+      --gmpx-color-primary: #d4af37;
+      --gmpx-font-family-base: inherit;
+      --gmpx-font-size-base: 14px;
+    `;
 
-      if (place?.geometry?.location) {
-        const location: Location = {
-          lat: place.geometry.location.lat(),
-          lng: place.geometry.location.lng(),
-          address: place.name || place.formatted_address || '',
-        };
-        setInputValue(location.address);
-        onPlaceSelect(location);
-      }
-    });
+    // Add placeholder attribute
+    autocompleteElement.setAttribute('placeholder', placeholder);
+
+    // Listen for place selection using the new event
+    autocompleteElement.addEventListener('gmp-placeselect', handlePlaceSelect);
+
+    // Insert the element into the container
+    const inputWrapper = containerRef.current.querySelector(`.${styles.autocompleteWrapper}`);
+    if (inputWrapper) {
+      inputWrapper.appendChild(autocompleteElement);
+    }
+
+    autocompleteElementRef.current = autocompleteElement;
 
     return () => {
-      if (autocompleteRef.current) {
-        google.maps.event.clearInstanceListeners(autocompleteRef.current);
+      if (autocompleteElementRef.current) {
+        autocompleteElementRef.current.removeEventListener('gmp-placeselect', handlePlaceSelect);
+        autocompleteElementRef.current.remove();
+        autocompleteElementRef.current = null;
       }
     };
-  }, [isLoaded, onPlaceSelect]);
+  }, [isLoaded, placeholder, handlePlaceSelect]);
 
   // Close radius dropdown when clicking outside
   useEffect(() => {
@@ -105,7 +138,7 @@ export default function PlacesAutocomplete({
   const currentRadiusLabel = RADIUS_OPTIONS.find(r => r.value === radius)?.label || '100m';
 
   return (
-    <div className={styles.container}>
+    <div className={styles.container} ref={containerRef}>
       <div className={styles.inputWrapper}>
         <div className={styles.searchIcon}>
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
@@ -113,15 +146,12 @@ export default function PlacesAutocomplete({
             <line x1="21" y1="21" x2="16.65" y2="16.65" />
           </svg>
         </div>
-        <input
-          ref={inputRef}
-          type="text"
-          placeholder={placeholder}
-          value={inputValue}
-          onChange={(e) => setInputValue(e.target.value)}
-          className={styles.input}
-          disabled={disabled || !isLoaded}
-        />
+        {/* Container for the PlaceAutocompleteElement */}
+        <div className={`${styles.autocompleteWrapper} ${disabled ? styles.disabled : ''}`}>
+          {!isLoaded && (
+            <div className={styles.placeholderText}>{placeholder}</div>
+          )}
+        </div>
         {!isLoaded && (
           <div className={styles.loadingIndicator}>
             <div className={styles.spinner} />

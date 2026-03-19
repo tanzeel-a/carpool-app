@@ -36,6 +36,57 @@
   height: 100%;
 }
 
+/* Wrapper for the PlaceAutocompleteElement */
+.autocompleteWrapper {
+  flex: 1;
+  padding-left: 44px;
+  min-width: 0;
+  display: flex;
+  align-items: center;
+}
+
+.autocompleteWrapper.disabled {
+  background: #f0ebe4;
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
+.placeholderText {
+  color: #6e6660;
+  font-size: 15px;
+  padding: 14px 20px 14px 0;
+}
+
+/* Style the Google PlaceAutocompleteElement */
+.autocompleteWrapper :global(gmp-place-autocomplete) {
+  width: 100%;
+  border: none;
+  background: transparent;
+  font-size: 15px;
+  font-family: inherit;
+  --gmpx-color-surface: transparent;
+  --gmpx-color-on-surface: #11100e;
+  --gmpx-color-on-surface-variant: #6e6660;
+  --gmpx-color-primary: #d4af37;
+  --gmpx-font-family-base: inherit;
+  --gmpx-font-size-base: 15px;
+}
+
+.autocompleteWrapper :global(gmp-place-autocomplete)::part(input) {
+  padding: 14px 20px 14px 0;
+  border: none;
+  background: transparent;
+  font-size: 15px;
+  font-family: inherit;
+  color: #11100e;
+  outline: none;
+}
+
+.autocompleteWrapper :global(gmp-place-autocomplete)::part(input)::placeholder {
+  color: #6e6660;
+}
+
+/* Legacy input styles (fallback) */
 .input {
   flex: 1;
   padding: 14px 20px 14px 44px;
