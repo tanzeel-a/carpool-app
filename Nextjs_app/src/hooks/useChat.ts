@@ -87,7 +87,8 @@ export function useChat(options: UseChatOptions): UseChatResult {
 
   // Initialize encryption keys
   const initializeEncryption = useCallback(async () => {
-    if (!chatId || !user || !db || !isEncryptionSupported()) {
+    // Only run on client-side and if encryption is supported
+    if (typeof window === 'undefined' || !chatId || !user || !db || !isEncryptionSupported()) {
       return false;
     }
 

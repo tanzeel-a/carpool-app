@@ -26,6 +26,11 @@ export interface KeyPair {
 // IndexedDB helpers
 function openDB(): Promise<IDBDatabase> {
   return new Promise((resolve, reject) => {
+    if (typeof window === 'undefined' || typeof indexedDB === 'undefined') {
+      reject(new Error('IndexedDB not available'));
+      return;
+    }
+
     const request = indexedDB.open(DB_NAME, DB_VERSION);
 
     request.onerror = () => reject(request.error);
@@ -285,6 +290,9 @@ export async function decryptLocation(
  * Check if encryption is supported in this browser
  */
 export function isEncryptionSupported(): boolean {
+  // Must be client-side
+  if (typeof window === 'undefined') return false;
+
   return (
     typeof crypto !== 'undefined' &&
     typeof crypto.subtle !== 'undefined' &&

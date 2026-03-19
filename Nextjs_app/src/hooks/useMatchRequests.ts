@@ -250,9 +250,9 @@ export function useMatchRequests(): UseMatchRequestsResult {
         const chatId = [user.uid, request.fromUserId].sort().join('_');
         const chatRef = doc(db, 'chats', chatId);
 
-        // Generate encryption keys for E2EE
+        // Generate encryption keys for E2EE (non-blocking)
         let encryptionKeys: Record<string, string> = {};
-        if (isEncryptionSupported()) {
+        if (typeof window !== 'undefined' && isEncryptionSupported()) {
           try {
             // Generate key pair for the accepting user
             const myKeyPair = await generateKeyPair();
@@ -268,8 +268,9 @@ export function useMatchRequests(): UseMatchRequestsResult {
 
             console.log('[MatchRequests] Generated encryption keys for user:', user.uid);
           } catch (cryptoErr) {
-            console.warn('[MatchRequests] Encryption not available:', cryptoErr);
-            // Continue without encryption if it fails
+            console.warn('[MatchRequests] Encryption setup skipped:', cryptoErr);
+            // Continue without encryption if it fails - chat will still work
+            encryptionKeys = {};
           }
         }
 
