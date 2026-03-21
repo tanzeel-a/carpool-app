@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { IBM_Plex_Mono, Sora } from "next/font/google";
+import { Analytics } from "@vercel/analytics/next";
 import "./globals.css";
 
 const sora = Sora({
@@ -27,6 +28,7 @@ export default function RootLayout({
     <html lang="en">
       <body className={`${sora.variable} ${ibmPlexMono.variable}`}>
         {children}
+        <Analytics />
       </body>
     </html>
   );
